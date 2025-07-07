@@ -1,2 +1,3 @@
-# roku-voice-assistant
-roku-voice-assistant
+# Roku Voice Assistant
+
+Local voice assistant to control Roku using natural language.
