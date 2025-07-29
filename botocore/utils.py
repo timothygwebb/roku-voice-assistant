@@ -1781,7 +1781,8 @@ class S3EndpointSetter(object):
 
         # Accelerate is only valid for Amazon endpoints.
         netloc = urlsplit(self._endpoint_url).netloc
-        if not netloc.endswith('amazonaws.com'):
+        # Ensure netloc is exactly 'amazonaws.com' or a subdomain of it
+        if not (netloc == 'amazonaws.com' or netloc.endswith('.amazonaws.com')):
             return False
 
         # The first part of the url should always be s3-accelerate.
