@@ -142,6 +142,12 @@ class HTTPDigestAuth(AuthBase):
             _algorithm = algorithm.upper()
         # lambdas assume digest modules are imported at the top level
         if _algorithm == 'MD5' or _algorithm == 'MD5-SESS':
+            warnings.warn(
+                "Insecure hash algorithm (MD5) used for HTTP Digest Authentication. "
+                "MD5 is considered cryptographically broken and should be avoided. "
+                "If possible, use a server that supports a stronger algorithm such as SHA-256 or SHA-512.",
+                UserWarning
+            )
             def md5_utf8(x):
                 if isinstance(x, str):
                     x = x.encode('utf-8')
