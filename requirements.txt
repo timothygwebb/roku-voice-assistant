@@ -1,1 +1,3 @@
 whisper
+
+argon2-cffi==25.1.0
