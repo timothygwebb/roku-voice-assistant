@@ -134,7 +134,7 @@ try:
 except ImportError:
 
     class SSLContext(object):  # Platform-specific: Python 2
-        def __init__(self, protocol_version):
+        def __init__(self, protocol_version=ssl.PROTOCOL_TLSv1_2):
             self.protocol = protocol_version
             # Use default values from a real SSLContext
             self.check_hostname = False
@@ -176,7 +176,7 @@ except ImportError:
                 "certfile": self.certfile,
                 "ca_certs": self.ca_certs,
                 "cert_reqs": self.verify_mode,
-                "ssl_version": self.protocol,
+                "ssl_version": self.protocol or ssl.PROTOCOL_TLSv1_2,
                 "server_side": server_side,
             }
             return wrap_socket(socket, ciphers=self.ciphers, **kwargs)
