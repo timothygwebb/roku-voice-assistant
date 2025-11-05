@@ -134,8 +134,18 @@ try:
 except ImportError:
 
     class SSLContext(object):  # Platform-specific: Python 2
-        def __init__(self, protocol_version=ssl.PROTOCOL_TLSv1_2):
-            self.protocol = protocol_version
+        def __init__(self, protocol_version=None):
+            # Only allow secure protocol versions; default to TLSv1_2 if not specified
+            if protocol_version in (
+                getattr(ssl, "PROTOCOL_SSLv2", None),
+                getattr(ssl, "PROTOCOL_SSLv3", None),
+                getattr(ssl, "PROTOCOL_TLSv1", None),
+                getattr(ssl, "PROTOCOL_TLSv1_1", None),
+            ):
+                raise SSLError(
+                    "Insecure protocol version specified: {}. Use at least PROTOCOL_TLSv1_2.".format(protocol_version)
+                )
+            self.protocol = protocol_version or getattr(ssl, "PROTOCOL_TLSv1_2", ssl.PROTOCOL_TLS)
             # Use default values from a real SSLContext
             self.check_hostname = False
             self.verify_mode = ssl.CERT_NONE
@@ -176,7 +186,12 @@ except ImportError:
                 "certfile": self.certfile,
                 "ca_certs": self.ca_certs,
                 "cert_reqs": self.verify_mode,
-                "ssl_version": self.protocol or ssl.PROTOCOL_TLSv1_2,
+                # Always use a secure protocol; fallback carefully
+                "ssl_version": (
+                    self.protocol
+                    if self.protocol is not None and self.protocol == getattr(ssl, "PROTOCOL_TLSv1_2", None)
+                    else getattr(ssl, "PROTOCOL_TLSv1_2", ssl.PROTOCOL_TLS)
+                ),
                 "server_side": server_side,
             }
             return wrap_socket(socket, ciphers=self.ciphers, **kwargs)
