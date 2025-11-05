@@ -142,19 +142,29 @@ class HTTPDigestAuth(AuthBase):
             _algorithm = algorithm.upper()
         # lambdas assume digest modules are imported at the top level
         if _algorithm == 'MD5' or _algorithm == 'MD5-SESS':
+            warnings.warn(
+                "Insecure hash algorithm (MD5) used for HTTP Digest Authentication. "
+                "MD5 is considered cryptographically broken and should be avoided. "
+                "If possible, use a server that supports a stronger algorithm such as SHA-256 or SHA-512.",
+                UserWarning
+            )
             def md5_utf8(x):
                 if isinstance(x, str):
                     x = x.encode('utf-8')
                 return hashlib.md5(x).hexdigest()
             hash_utf8 = md5_utf8
         elif _algorithm == 'SHA':
-            from argon2 import PasswordHasher
-            ph = PasswordHasher()
-            def argon2_utf8(x):
+            warnings.warn(
+                "Server requested insecure hash algorithm (SHA-1) for HTTP Digest Authentication. "
+                "Overriding to use SHA-256 for improved security. "
+                "If authentication fails, please contact the server administrator to enable support for stronger algorithms.",
+                UserWarning
+            )
+            def sha256_utf8(x):
                 if isinstance(x, str):
                     x = x.encode('utf-8')
-                return ph.hash(x)
-            hash_utf8 = argon2_utf8
+                return hashlib.sha256(x).hexdigest()
+            hash_utf8 = sha256_utf8
         elif _algorithm == 'SHA-256':
             def sha256_utf8(x):
                 if isinstance(x, str):
