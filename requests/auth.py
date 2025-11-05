@@ -155,16 +155,16 @@ class HTTPDigestAuth(AuthBase):
             hash_utf8 = md5_utf8
         elif _algorithm == 'SHA':
             warnings.warn(
-                "Insecure hash algorithm (SHA-1) used for HTTP Digest Authentication. "
-                "SHA-1 is considered weak and should be avoided. "
-                "If possible, use a server that supports a stronger algorithm such as SHA-256 or SHA-512.",
+                "Server requested insecure hash algorithm (SHA-1) for HTTP Digest Authentication. "
+                "Overriding to use SHA-256 for improved security. "
+                "If authentication fails, please contact the server administrator to enable support for stronger algorithms.",
                 UserWarning
             )
-            def sha1_utf8(x):
+            def sha256_utf8(x):
                 if isinstance(x, str):
                     x = x.encode('utf-8')
-                return hashlib.sha1(x).hexdigest()
-            hash_utf8 = sha1_utf8
+                return hashlib.sha256(x).hexdigest()
+            hash_utf8 = sha256_utf8
         elif _algorithm == 'SHA-256':
             def sha256_utf8(x):
                 if isinstance(x, str):
