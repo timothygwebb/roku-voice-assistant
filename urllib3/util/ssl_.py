@@ -187,14 +187,20 @@ except ImportError:
                 "certfile": self.certfile,
                 "ca_certs": self.ca_certs,
                 "cert_reqs": self.verify_mode,
-                # Always use a secure protocol; fallback carefully
+                # Always use a secure protocol; never fall back to insecure ones
                 "ssl_version": (
                     self.protocol
                     if self.protocol is not None and self.protocol == getattr(ssl, "PROTOCOL_TLSv1_2", None)
-                    else getattr(ssl, "PROTOCOL_TLSv1_2", ssl.PROTOCOL_TLS)
+                    else getattr(ssl, "PROTOCOL_TLSv1_2", None)
                 ),
                 "server_side": server_side,
             }
+            if kwargs["ssl_version"] is None:
+                raise SSLError(
+                    "A secure TLS version (TLSv1_2) is not available. "
+                    "Cannot establish a secure SSL connection. "
+                    "You must upgrade your Python or OpenSSL implementation."
+                )
             return wrap_socket(socket, ciphers=self.ciphers, **kwargs)
 
 
