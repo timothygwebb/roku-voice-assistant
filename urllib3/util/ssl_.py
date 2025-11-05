@@ -6,6 +6,7 @@ import os
 import sys
 import warnings
 from binascii import hexlify, unhexlify
+import ssl
 
 from ..exceptions import (
     InsecurePlatformWarning,
@@ -312,6 +313,18 @@ def create_urllib3_context(
         ssl_version = PROTOCOL_TLS_CLIENT
 
     context = SSLContext(ssl_version)
+
+    # Enforce minimum protocol version TLSv1.2 for security
+    if hasattr(context, "minimum_version") and hasattr(ssl, "TLSVersion"):
+        context.minimum_version = ssl.TLSVersion.TLSv1_2
+    else:
+        # For old Python: set options to disable TLSv1 and TLSv1.1
+        if options is None:
+            options = 0
+        if hasattr(ssl, "OP_NO_TLSv1"):
+            options |= ssl.OP_NO_TLSv1
+        if hasattr(ssl, "OP_NO_TLSv1_1"):
+            options |= ssl.OP_NO_TLSv1_1
 
     context.set_ciphers(ciphers or DEFAULT_CIPHERS)
 
