@@ -1,8 +1,10 @@
 name: Voice Assistant CI
+permissions:
+  contents: read
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   build:
