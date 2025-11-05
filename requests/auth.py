@@ -154,13 +154,17 @@ class HTTPDigestAuth(AuthBase):
                 return hashlib.md5(x).hexdigest()
             hash_utf8 = md5_utf8
         elif _algorithm == 'SHA':
-            from argon2 import PasswordHasher
-            ph = PasswordHasher()
-            def argon2_utf8(x):
+            warnings.warn(
+                "Server requested insecure hash algorithm (SHA-1) for HTTP Digest Authentication. "
+                "Overriding to use SHA-256 for improved security. "
+                "If authentication fails, please contact the server administrator to enable support for stronger algorithms.",
+                UserWarning
+            )
+            def sha256_utf8(x):
                 if isinstance(x, str):
                     x = x.encode('utf-8')
-                return ph.hash(x)
-            hash_utf8 = argon2_utf8
+                return hashlib.sha256(x).hexdigest()
+            hash_utf8 = sha256_utf8
         elif _algorithm == 'SHA-256':
             def sha256_utf8(x):
                 if isinstance(x, str):
