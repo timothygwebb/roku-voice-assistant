@@ -10,6 +10,4 @@ Use this section to tell people about which versions of your project are current
 
 ## Reporting a Vulnerability
 
-How to report a vulnerability.
-
-Create an issue.
+To report a security vulnerability, please use the "Report a vulnerability" feature on GitHub. This ensures the report is delivered to the maintainers privately.
