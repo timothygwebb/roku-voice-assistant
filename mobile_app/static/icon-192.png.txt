@@ -1,0 +1,2 @@
+# Placeholder for 192x192 icon
+# In production, replace with actual PNG image
