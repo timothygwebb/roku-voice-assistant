@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Roku Assistant">
+    <title>Roku Voice Assistant</title>
+    <link rel="apple-touch-icon" href="/static/icon-192.png">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎬 Roku Assistant</h1>
+            <p class="subtitle">Control your Roku device</p>
+        </header>
+
+        <div id="status" class="status hidden"></div>
+
+        <!-- Configuration Section -->
+        <section class="config-section">
+            <h2>Device Configuration</h2>
+            <div class="input-group">
+                <label for="roku-ip">Roku IP Address:</label>
+                <input type="text" id="roku-ip" placeholder="192.168.1.100" />
+                <button onclick="saveConfig()" class="btn btn-primary">Save</button>
+            </div>
+        </section>
+
+        <!-- Voice Control Section -->
+        <section class="voice-section">
+            <h2>Voice Control</h2>
+            <button id="voice-btn" class="btn-voice" onclick="startVoiceRecognition()">
+                <span class="mic-icon">🎤</span>
+                <span>Tap to Speak</span>
+            </button>
+            <p id="voice-result" class="voice-result"></p>
+        </section>
+
+        <!-- Quick Actions -->
+        <section class="quick-actions">
+            <h2>Quick Actions</h2>
+            <div class="action-grid">
+                <button onclick="sendCommand('Home')" class="btn btn-action">🏠 Home</button>
+                <button onclick="sendCommand('Back')" class="btn btn-action">⬅️ Back</button>
+                <button onclick="sendCommand('Play')" class="btn btn-action">⏯️ Play/Pause</button>
+                <button onclick="sendCommand('Select')" class="btn btn-action">✓ Select</button>
+            </div>
+        </section>
+
+        <!-- Navigation Controls -->
+        <section class="navigation">
+            <h2>Navigation</h2>
+            <div class="dpad">
+                <button onclick="sendCommand('Up')" class="btn-nav btn-up">▲</button>
+                <div class="dpad-middle">
+                    <button onclick="sendCommand('Left')" class="btn-nav btn-left">◄</button>
+                    <button onclick="sendCommand('Select')" class="btn-nav btn-center">OK</button>
+                    <button onclick="sendCommand('Right')" class="btn-nav btn-right">►</button>
+                </div>
+                <button onclick="sendCommand('Down')" class="btn-nav btn-down">▼</button>
+            </div>
+        </section>
+
+        <!-- Volume Controls -->
+        <section class="volume-controls">
+            <h2>Volume</h2>
+            <div class="control-row">
+                <button onclick="sendCommand('VolumeDown')" class="btn btn-volume">🔉 Down</button>
+                <button onclick="sendCommand('VolumeMute')" class="btn btn-volume">🔇 Mute</button>
+                <button onclick="sendCommand('VolumeUp')" class="btn btn-volume">🔊 Up</button>
+            </div>
+        </section>
+
+        <!-- Playback Controls -->
+        <section class="playback-controls">
+            <h2>Playback</h2>
+            <div class="control-row">
+                <button onclick="sendCommand('Rev')" class="btn btn-playback">⏪ Rewind</button>
+                <button onclick="sendCommand('Play')" class="btn btn-playback">⏯️ Play</button>
+                <button onclick="sendCommand('Fwd')" class="btn btn-playback">⏩ Forward</button>
+            </div>
+        </section>
+
+        <!-- App Launcher -->
+        <section class="app-launcher">
+            <h2>Launch Apps</h2>
+            <div class="app-grid">
+                <button onclick="launchApp('Netflix', '12')" class="btn btn-app">Netflix</button>
+                <button onclick="launchApp('Hulu', '2285')" class="btn btn-app">Hulu</button>
+                <button onclick="launchApp('YouTube', '837')" class="btn btn-app">YouTube</button>
+                <button onclick="launchApp('Prime Video', '13')" class="btn btn-app">Prime</button>
+                <button onclick="launchApp('Disney+', '291097')" class="btn btn-app">Disney+</button>
+                <button onclick="launchApp('HBO Max', '61322')" class="btn btn-app">HBO Max</button>
+            </div>
+        </section>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

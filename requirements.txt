@@ -4,3 +4,6 @@ requests>=2.31.0
 urllib3>=2.0.0
 python-dateutil>=2.9.0
 chardet>=5.0.0
+Flask>=3.0.0
+flask-cors>=4.0.0
+gunicorn>=22.0.0
