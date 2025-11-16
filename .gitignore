@@ -1,0 +1,4 @@
+# Exclude Panache files and Python compiled bytecode files
+*.panache
+*.pyc
+.
