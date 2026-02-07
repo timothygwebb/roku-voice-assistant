@@ -3,6 +3,7 @@
 ## Overview
 
 Roku Voice Assistant lets you control your Roku device(s) using voice commands through multiple interfaces:
+
 - **Alexa Integration**: AWS Lambda function with Alexa Skills Kit
 - **Mobile App**: Progressive Web App optimized for iPhone 13 and iOS devices
 - **REST API**: Backend server for mobile and web integration
@@ -10,11 +11,13 @@ Roku Voice Assistant lets you control your Roku device(s) using voice commands t
 ## Features
 
 ### Alexa Integration
+
 - Control Roku via voice through Alexa devices
 - Launch apps, control playback, adjust volume
 - Search and play content
 
 ### Mobile App (NEW!)
+
 - 📱 **iPhone 13 Optimized**: Responsive design with iOS-specific features
 - 🎤 **Voice Control**: Native speech recognition for voice commands
 - 📲 **PWA Support**: Install as a native-like app on iOS/Android
@@ -27,11 +30,13 @@ Roku Voice Assistant lets you control your Roku device(s) using voice commands t
 ### Mobile App Setup (iPhone 13 / iOS)
 
 1. **Install dependencies**:
+
    ```bash
    pip install -r requirements.txt
    ```
 
 2. **Start the mobile server**:
+
    ```bash
    cd mobile_app
    python app.py
@@ -53,26 +58,31 @@ Roku Voice Assistant lets you control your Roku device(s) using voice commands t
 1. Clone this repo.
 2. Set up a Python 3.11+ virtual environment.
 3. Install dependencies:
-   ```
+
+   ```bash
    pip install -r requirements.txt
    ```
+
 4. Configure your AWS credentials.
 5. Deploy `lambda_function.py` to AWS Lambda.
 
 ## Usage
 
 ### Mobile App
+
 - **Voice Commands**: "Play", "Pause", "Open Netflix", "Volume up", etc.
 - **Touch Controls**: D-pad navigation, volume buttons, app shortcuts
 - **Configuration**: Set Roku IP in the app settings
 
 ### Alexa
+
 - Use Alexa to invoke your custom skill and control your Roku TV
 - Supported commands: Power on/off, volume control, app launching
 
 ## API Endpoints
 
 The mobile API server provides REST endpoints:
+
 - `POST /api/keypress` - Send remote control commands
 - `POST /api/launch` - Launch streaming apps
 - `POST /api/voice` - Process voice commands
@@ -101,7 +111,7 @@ See [mobile_app/README.md](mobile_app/README.md) for complete API documentation.
 - [x] iOS/iPhone 13 optimization
 - [x] REST API for mobile communication
 - [x] Progressive Web App (PWA) support
-- [ ] Add streaming app support.
+- [x] Add streaming app support.
 - [ ] Integrate Google Assistant.
 - [ ] Improve error handling and logging.
 - [ ] Expand documentation.

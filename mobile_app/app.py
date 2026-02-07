@@ -27,6 +27,39 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 CONFIG_FILE = 'config.json'
 DEFAULT_ROKU_PORT = 8060
 
+APP_CATALOG = {
+    "netflix": {
+        "id": "12",
+        "display_name": "Netflix",
+        "aliases": ["netflix"],
+    },
+    "hulu": {
+        "id": "2285",
+        "display_name": "Hulu",
+        "aliases": ["hulu"],
+    },
+    "disney_plus": {
+        "id": "291097",
+        "display_name": "Disney+",
+        "aliases": ["disney", "disney plus", "disney+"],
+    },
+    "prime_video": {
+        "id": "13",
+        "display_name": "Prime Video",
+        "aliases": ["prime", "prime video", "amazon", "amazon prime"],
+    },
+    "youtube": {
+        "id": "837",
+        "display_name": "YouTube",
+        "aliases": ["youtube", "you tube"],
+    },
+    "hbo_max": {
+        "id": "61322",
+        "display_name": "HBO Max",
+        "aliases": ["hbo", "hbo max", "max"],
+    },
+}
+
 class RokuConfig:
     """Manages Roku device configuration"""
     def __init__(self):
@@ -64,6 +97,23 @@ class RokuConfig:
 
 # Global configuration instance
 roku_config = RokuConfig()
+
+def resolve_app_from_name(app_name):
+    """Resolve a Roku app by friendly name or alias."""
+    normalized = app_name.strip().lower()
+    for metadata in APP_CATALOG.values():
+        aliases = [metadata["display_name"].lower()] + metadata["aliases"]
+        if normalized in aliases:
+            return metadata
+    return None
+
+def find_app_in_command(command):
+    """Find a known app referenced in a voice command."""
+    for metadata in APP_CATALOG.values():
+        aliases = [metadata["display_name"].lower()] + metadata["aliases"]
+        if any(alias in command for alias in aliases):
+            return metadata
+    return None
 
 def send_roku_command(command_path, method="POST", params=None):
     """
@@ -150,16 +200,31 @@ def launch():
     """Launch an app on Roku"""
     data = request.get_json()
     app_id = data.get('app_id')
-    app_name = data.get('app_name', 'app')
-    
+    app_name = data.get('app_name')
+
+    resolved_app = None
+    if not app_id and app_name:
+        resolved_app = resolve_app_from_name(app_name)
+        if resolved_app:
+            app_id = resolved_app["id"]
+
     if not app_id:
-        return jsonify({'success': False, 'message': 'App ID required'}), 400
-    
+        success, message = send_roku_command('keypress/Home')
+        return jsonify({
+            'success': success,
+            'message': "Unknown app. Opening Home." if success else message
+        }), 200 if success else 400
+
+    display_name = (
+        app_name
+        or (resolved_app["display_name"] if resolved_app else None)
+        or "app"
+    )
     success, message = send_roku_command(f"launch/{app_id}")
-    
+
     return jsonify({
         'success': success,
-        'message': f"Launched {app_name}" if success else message
+        'message': f"Launched {display_name}" if success else message
     })
 
 @app.route('/api/voice', methods=['POST'])
@@ -208,21 +273,16 @@ def voice():
         success, message = send_roku_command('keypress/VolumeMute')
     
     # App launches
-    elif 'netflix' in command:
-        success, message = send_roku_command('launch/12')
-        message = "Launching Netflix" if success else message
-    elif 'hulu' in command:
-        success, message = send_roku_command('launch/2285')
-        message = "Launching Hulu" if success else message
-    elif 'youtube' in command:
-        success, message = send_roku_command('launch/837')
-        message = "Launching YouTube" if success else message
-    elif 'prime' in command or 'amazon' in command:
-        success, message = send_roku_command('launch/13')
-        message = "Launching Prime Video" if success else message
-    elif 'disney' in command:
-        success, message = send_roku_command('launch/291097')
-        message = "Launching Disney+" if success else message
+    else:
+        resolved_app = find_app_in_command(command)
+        if resolved_app:
+            success, message = send_roku_command(f"launch/{resolved_app['id']}")
+            message = (
+                f"Launching {resolved_app['display_name']}" if success else message
+            )
+        elif any(trigger in command for trigger in ["open", "launch", "start"]):
+            success, message = send_roku_command('keypress/Home')
+            message = "App not recognized. Opening Home." if success else message
     
     return jsonify({
         'success': success,

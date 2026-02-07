@@ -24,11 +24,13 @@ A mobile-optimized Progressive Web App (PWA) for controlling your Roku device fr
 ### Installation
 
 1. Install dependencies:
+
    ```bash
    pip install -r requirements.txt
    ```
 
 2. Start the mobile API server:
+
    ```bash
    cd mobile_app
    python app.py
@@ -73,6 +75,7 @@ A mobile-optimized Progressive Web App (PWA) for controlling your Roku device fr
 ### Voice Commands
 
 Tap the microphone button and say commands like:
+
 - "Home" - Go to home screen
 - "Play" / "Pause" - Control playback
 - "Volume up" / "Volume down" - Adjust volume
@@ -95,37 +98,40 @@ The mobile API server exposes the following REST endpoints:
 ### Configuration
 
 - `POST /api/config` - Set Roku IP address
-  ```json
-  {
-    "roku_ip": "192.168.1.100"
-  }
-  ```
+
+   ```json
+   {
+      "roku_ip": "192.168.1.100"
+   }
+   ```
 
 - `GET /api/config` - Get current configuration
 
 ### Control
 
 - `POST /api/keypress` - Send keypress command
-  ```json
-  {
-    "key": "Home"
-  }
-  ```
 
-- `POST /api/launch` - Launch an app
-  ```json
-  {
-    "app_id": "12",
-    "app_name": "Netflix"
-  }
-  ```
+   ```json
+   {
+      "key": "Home"
+   }
+   ```
+
+- `POST /api/launch` - Launch an app (accepts `app_id`, `app_name`, or both)
+
+   ```json
+   {
+      "app_name": "Netflix"
+   }
+   ```
 
 - `POST /api/voice` - Process voice command
-  ```json
-  {
-    "command": "play Netflix"
-  }
-  ```
+
+   ```json
+   {
+      "command": "play Netflix"
+   }
+   ```
 
 ### Status
 
@@ -134,12 +140,15 @@ The mobile API server exposes the following REST endpoints:
 ## Roku App IDs
 
 Common streaming app IDs:
+
 - Netflix: `12`
 - Hulu: `2285`
 - YouTube: `837`
 - Prime Video: `13`
 - Disney+: `291097`
 - HBO Max: `61322`
+
+Supported `app_name` values (case-insensitive): Netflix, Hulu, Disney+, Prime Video, YouTube, HBO Max.
 
 To find more app IDs, visit: `http://[ROKU_IP]:8060/query/apps`
 
@@ -180,6 +189,7 @@ For production use, consider:
    - Configure reverse proxy (nginx/Apache)
 
 2. **Use Production Server**: Replace Flask development server
+
    ```bash
    gunicorn -w 4 -b 0.0.0.0:5000 app:app
    ```
