@@ -86,7 +86,9 @@ The server will start on `http://0.0.0.0:5000` by default.
 Tap the microphone button and say commands like:
 
 - "Home" - Go to home screen
+- "Back" - Go back
 - "Play" / "Pause" - Control playback
+- "Rewind" / "Fast forward" - Skip backward/forward
 - "Volume up" / "Volume down" - Adjust volume
 - "Mute" - Toggle mute
 - "Open Netflix" / "Launch Hulu" - Open streaming apps
