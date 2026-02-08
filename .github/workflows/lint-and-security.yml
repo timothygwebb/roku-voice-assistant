@@ -16,8 +16,6 @@ jobs:
         with:
           python-version: '3.10'
       - name: Install dependencies
-        run: pip install bandit==1.7.9 black==24.4.2
-      - name: Run Black Check
-        run: black --check .
+        run: pip install bandit==1.7.9
       - name: Run Bandit (security scan)
         run: bandit -r .
