@@ -33,11 +33,12 @@ Roku Voice Assistant lets you control your Roku device(s) using voice commands t
 - AWS account with Lambda access
 - Roku device with "Control by mobile apps" enabled
 
-Core dependencies (from `requirements.txt`):
+Core Python package dependencies (from `requirements.txt`):
 
 - boto3 (AWS SDK)
 - requests (HTTP client)
-- ask-sdk-core (Alexa Skills Kit)
+
+Alexa SDK functionality is provided by vendored modules in this repo (e.g., `ask_sdk_core/`, `ask_sdk_model/`, `ask_sdk/`, `ask_sdk_dynamodb/`, `ask_sdk_runtime/`), so no additional Alexa SDK packages need to be installed via `requirements.txt`.
 
 ### Mobile App
 

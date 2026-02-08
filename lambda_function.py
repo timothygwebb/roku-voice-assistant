@@ -40,21 +40,53 @@ ROKU_PORT = 8060
 # Roku App ID Catalog
 # These app IDs are standard across most Roku devices
 APP_CATALOG = {
-    "netflix": "12",
-    "hulu": "2285",
-    "youtube": "837",
-    "prime video": "13",
-    "amazon prime": "13",
-    "disney plus": "291097",
-    "disney+": "291097",
-    "hbo max": "61322",
-    "max": "61322",
+    "netflix": {
+        "id": "12",
+        "display_name": "Netflix",
+    },
+    "hulu": {
+        "id": "2285",
+        "display_name": "Hulu",
+    },
+    "youtube": {
+        "id": "837",
+        "display_name": "YouTube",
+    },
+    "prime video": {
+        "id": "13",
+        "display_name": "Prime Video",
+    },
+    "amazon prime": {
+        "id": "13",
+        "display_name": "Prime Video",
+    },
+    "disney plus": {
+        "id": "291097",
+        "display_name": "Disney+",
+    },
+    "disney+": {
+        "id": "291097",
+        "display_name": "Disney+",
+    },
+    "hbo max": {
+        "id": "61322",
+        "display_name": "HBO Max",
+    },
+    "max": {
+        "id": "61322",
+        "display_name": "HBO Max",
+    },
 }
 
 # --- Roku Interaction Functions ---
 
 def send_roku_command(command_path, method="POST", params=None):
     """Sends a command to the Roku device via ECP."""
+    # Check if ROKU_IP_ADDRESS is still the placeholder
+    if ROKU_IP_ADDRESS == "YOUR_ROKU_IP_ADDRESS":
+        logger.error("ROKU_IP_ADDRESS is not configured. Please set your Roku device's IP address.")
+        return False, "Roku not configured. Please set ROKU_IP_ADDRESS in lambda_function.py."
+    
     url = f"http://{ROKU_IP_ADDRESS}:{ROKU_PORT}/{command_path}"
     try:
         if method == "POST":
@@ -66,12 +98,12 @@ def send_roku_command(command_path, method="POST", params=None):
         return True, "Command sent successfully"
     except requests.exceptions.RequestException as e:
         logger.error(f"Error sending Roku command '{command_path}': {e}")
-        return False, str(e)
+        return False, "Connection error"
 
 def control_roku_keypress(key):
     """Simulates a keypress on the Roku remote."""
     success, message = send_roku_command(f"keypress/{key}")
-    return f"Sent {key} command" if success else f"Failed: {message}"
+    return f"Sent {key} command" if success else "Failed to send command"
 
 def control_roku_play_pause():
     """Simulates play/pause action on Roku."""
@@ -129,9 +161,16 @@ def get_roku_app_id_for_name(app_name):
     """
     Retrieves the Roku app ID for a given app name.
     Uses the APP_CATALOG dictionary for known apps.
+    
+    Args:
+        app_name: Name of the app (case-insensitive)
+    
+    Returns:
+        str: App ID if found, None otherwise
     """
     normalized_name = app_name.lower().strip()
-    return APP_CATALOG.get(normalized_name)
+    app_info = APP_CATALOG.get(normalized_name)
+    return app_info["id"] if app_info else None
 
 def launch_app_on_roku(app_name):
     """Launches an app on Roku by name."""
@@ -142,9 +181,12 @@ def launch_app_on_roku(app_name):
         if success:
             return f"Launched {app_name}"
         else:
-            return f"Failed to launch {app_name}: {message}"
+            return f"Failed to launch {app_name}"
     else:
-        return f"App '{app_name}' not found. Try Netflix, Hulu, YouTube, Prime Video, Disney Plus, or HBO Max."
+        # Generate app list from APP_CATALOG display names
+        unique_apps = sorted(set(info["display_name"] for info in APP_CATALOG.values()))
+        app_list = ", ".join(unique_apps)
+        return f"App '{app_name}' not found. Try {app_list}."
 
 def control_roku_search(content_title):
     """
@@ -157,7 +199,8 @@ def control_roku_search(content_title):
     # Best we can do is go to home and let the user search manually
     result = control_roku_home()
     if "Failed" in result:
-        return f"Unable to navigate to home screen. {result}"
+        logger.warning(f"Failed to navigate home for search: {result}")
+        return "Unable to navigate to home screen. Please check your Roku connection."
     return f"Please search for {content_title} manually from the Roku home screen"
 
 # --- Alexa Skill Intent Handlers ---
@@ -193,11 +236,17 @@ class PlayContentIntentHandler(AbstractRequestHandler):
             # Try to launch the app
             response_text = launch_app_on_roku(app_name_value)
             if content_title_value:
-                speak_output = f"{response_text}. {control_roku_search(content_title_value)}"
+                # Do not trigger a global Roku search (which may press Home and exit the app)
+                # after launching an app. Instead, give the user guidance to search inside the app.
+                speak_output = (
+                    f"{response_text}. "
+                    f"Once {app_name_value} opens, use your Roku remote to search for "
+                    f"{content_title_value}."
+                )
             else:
                 speak_output = response_text
         elif content_title_value:
-            # Just search for the content
+            # Just search for the content using Roku's global search
             speak_output = control_roku_search(content_title_value)
         else:
             speak_output = "I need either an app name or content title to help you."
