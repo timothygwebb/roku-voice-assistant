@@ -39,8 +39,6 @@ This includes:
 
 ### Start the Server
 
-### Start the Server
-
 ```bash
 cd mobile_app
 python app.py

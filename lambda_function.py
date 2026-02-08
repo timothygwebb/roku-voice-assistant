@@ -160,8 +160,6 @@ def control_roku_search(content_title):
 
 # --- Alexa Skill Intent Handlers ---
 
-# --- Alexa Skill Intent Handlers ---
-
 class LaunchRequestHandler(AbstractRequestHandler):
     """Handler for Skill Launch."""
     def can_handle(self, handler_input):
