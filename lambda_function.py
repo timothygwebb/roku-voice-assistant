@@ -66,12 +66,12 @@ def send_roku_command(command_path, method="POST", params=None):
         return True, "Command sent successfully"
     except requests.exceptions.RequestException as e:
         logger.error(f"Error sending Roku command '{command_path}': {e}")
-        return False, str(e)
+        return False, "Connection error"
 
 def control_roku_keypress(key):
     """Simulates a keypress on the Roku remote."""
     success, message = send_roku_command(f"keypress/{key}")
-    return f"Sent {key} command" if success else f"Failed: {message}"
+    return f"Sent {key} command" if success else "Failed to send command"
 
 def control_roku_play_pause():
     """Simulates play/pause action on Roku."""
@@ -142,7 +142,7 @@ def launch_app_on_roku(app_name):
         if success:
             return f"Launched {app_name}"
         else:
-            return f"Failed to launch {app_name}: {message}"
+            return f"Failed to launch {app_name}"
     else:
         return f"App '{app_name}' not found. Try Netflix, Hulu, YouTube, Prime Video, Disney Plus, or HBO Max."
 
