@@ -46,3 +46,15 @@ The maintainers will respond to security reports within 48 hours and work to rel
 - Review code changes for security issues before deployment
 - Enable "Control by mobile apps" on Roku only when needed
 - Use VPN for remote access rather than exposing the API to the internet
+
+## Automated Security Scanning
+
+This repository uses several automated security scanning tools:
+
+- **Bandit**: Scans Python code for common security issues (runs in CI)
+- **CodeQL**: Semantic code analysis via GitHub Code Scanning (default setup)
+  - Configured through GitHub repository settings (Security > Code security and analysis)
+  - Runs automatically on push and pull requests
+  - Includes scheduled scans (typically weekly) to detect new vulnerabilities
+
+**Note**: This project uses GitHub's CodeQL default setup rather than a custom workflow to avoid configuration conflicts. The default setup provides comprehensive security scanning with automatic updates to detection rules.
