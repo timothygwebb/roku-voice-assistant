@@ -135,20 +135,11 @@ See [mobile_app/README.md](mobile_app/README.md) for complete API documentation.
 
 ## Testing & CI
 
-- **Linting**: Code style is checked with Flake8 and Black
-- **Security**: Automated security scanning with Bandit and CodeQL (via GitHub default setup)
+- **Security**: Automated security scanning with CodeQL (via GitHub default setup)
 - **CI Workflows**: See `.github/workflows/` for automated checks
   - `voice-ci.yml`: Build and dependency checks
-  - `lint-and-security.yml`: Code style and security scanning
 
-To run linting locally:
-
-```bash
-pip install flake8 black bandit
-flake8 .
-black --check .
-bandit -r .
-```
+CodeQL security scanning is configured through GitHub's repository settings (Security > Code security and analysis) and runs automatically on push and pull requests.
 
 ## Browser Compatibility (Mobile App)
 

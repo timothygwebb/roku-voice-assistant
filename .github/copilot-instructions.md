@@ -10,7 +10,7 @@
 - **Install dependencies**: `pip install -r requirements.txt`
 - **Mobile App server**: `cd mobile_app && python app.py` (see `mobile_app/README.md` for details)
 - **Alexa Lambda deployment**: Deploy `lambda_function.py` to AWS Lambda after configuring AWS credentials.
-- **Testing & CI**: Code style checked with Flake8 and Black; security scanning via Bandit. CI workflows in `.github/workflows/`.
+- **Testing & CI**: CI workflow in `.github/workflows/voice-ci.yml` handles build and dependency checks. CodeQL security scanning via GitHub default setup.
 
 ## Project-Specific Patterns
 - **Roku IP Configuration**: Set Roku device IP via mobile app or Alexa skill configuration.
