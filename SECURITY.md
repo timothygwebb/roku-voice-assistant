@@ -52,7 +52,7 @@ The maintainers will respond to security reports within 48 hours and work to rel
 This repository uses several automated security scanning tools:
 
 - **Bandit**: Scans Python code for common security issues (runs in CI)
-- **CodeQL**: Advanced semantic code analysis via GitHub's default setup
+- **CodeQL**: Semantic code analysis via GitHub Code Scanning (default setup)
   - Configured through GitHub repository settings (Security > Code security and analysis)
   - Runs automatically on push and pull requests
   - Weekly scheduled scans to detect new vulnerabilities
