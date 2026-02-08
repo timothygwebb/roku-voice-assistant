@@ -38,8 +38,21 @@ Core Python package dependencies (from `requirements.txt`):
 - boto3 (AWS SDK)
 - requests (HTTP client)
 
-Alexa SDK functionality is provided by vendored modules in this repo (e.g., `ask_sdk_core/`, `ask_sdk_model/`, `ask_sdk/`, `ask_sdk_dynamodb/`, `ask_sdk_runtime/`), so no additional Alexa SDK packages need to be installed via `requirements.txt`.
+Alexa SDK functionality for the Lambda skill is vendored in this repository under the legacy virtualenv at `venv/lib/python2.7/site-packages/`. That directory is **only** used when building the Lambda deployment ZIP (it is bundled alongside `lambda_function.py`) and is not intended to be your local Python 3.10+ virtual environment.
 
+If you want to run `lambda_function.py` locally with Python 3.10+ (for example, to debug the Alexa skill), you must either:
+
+- Install the Alexa SDK packages into your local environment (recommended), e.g.:
+  - `ask_sdk_core`
+  - `ask_sdk_model`
+  - `ask_sdk_runtime`
+  - `ask_sdk_dynamodb`
+
+  or
+
+- Temporarily add the vendored site-packages directory (`venv/lib/python2.7/site-packages/`) to your `PYTHONPATH` so that `ask_sdk_*` modules can be imported.
+
+The Alexa SDK is therefore **not** listed in `requirements.txt`; that file only covers shared/core dependencies and the mobile app/backend server dependencies for local development.
 ### Mobile App
 
 - Python 3.10+
@@ -135,20 +148,11 @@ See [mobile_app/README.md](mobile_app/README.md) for complete API documentation.
 
 ## Testing & CI
 
-- **Linting**: Code style is checked with Flake8 and Black
-- **Security**: Automated security scanning with Bandit and CodeQL (via GitHub default setup)
+- **Security**: Automated security scanning with CodeQL (via GitHub default setup)
 - **CI Workflows**: See `.github/workflows/` for automated checks
-  - `voice-ci.yml`: Build and dependency checks
-  - `lint-and-security.yml`: Code style and security scanning
+  - `voice-ci.yml`: Environment setup and dependency installation (Python and ffmpeg)
 
-To run linting locally:
-
-```bash
-pip install flake8 black bandit
-flake8 .
-black --check .
-bandit -r .
-```
+CodeQL security scanning is configured through GitHub's repository settings (Security > Code security and analysis) and runs automatically on push and pull requests.
 
 ## Browser Compatibility (Mobile App)
 

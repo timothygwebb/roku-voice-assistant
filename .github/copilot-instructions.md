@@ -4,18 +4,18 @@
 - **Alexa Integration**: AWS Lambda function (`lambda_function.py`) using Alexa Skills Kit SDK. Handles voice commands for Roku control.
 - **Mobile App**: Located in `mobile_app/`. Progressive Web App (PWA) optimized for iPhone 13/iOS, provides touch and voice control. Backend server exposes REST API endpoints.
 - **REST API**: Mobile app backend exposes endpoints for Roku control, app launching, voice processing, and device configuration.
-- **SDKs**: Custom Alexa SDK modules in [ask_sdk/], [ask_sdk_core/], [ask_sdk_model/], [ask_sdk_dynamodb/], [ask_sdk_runtime/].
+- **SDKs**: Alexa SDK modules are vendored in the `venv/` directory for Lambda deployment packaging.
 
 ## Developer Workflows
 - **Install dependencies**: `pip install -r requirements.txt`
 - **Mobile App server**: `cd mobile_app && python app.py` (see `mobile_app/README.md` for details)
 - **Alexa Lambda deployment**: Deploy `lambda_function.py` to AWS Lambda after configuring AWS credentials.
-- **Testing & CI**: Code style checked with Flake8 and Black; security scanning via Bandit. CI workflows in `.github/workflows/`.
+- **Testing & CI**: CI workflow in `.github/workflows/voice-ci.yml` installs dependencies and `ffmpeg` to validate the environment. CodeQL security scanning via GitHub default setup.
 
 ## Project-Specific Patterns
 - **Roku IP Configuration**: Set Roku device IP via mobile app or Alexa skill configuration.
 - **API Endpoints**: Mobile app backend provides `/api/keypress`, `/api/launch`, `/api/voice`, `/api/config`, `/api/status`.
-- **Alexa Skill**: Uses custom SDK modules for request/response handling. See [ask_sdk_core/handler_input.py], [ask_sdk_core/skill_builder.py].
+- **Alexa Skill**: Uses Alexa SDK modules for request/response handling (vendored in venv/ for Lambda packaging).
 - **Mobile App**: Designed for iOS, but works cross-platform. Uses native speech recognition and touch controls.
 
 ## Integration Points
@@ -26,7 +26,7 @@
 ## Key Files & Directories
 - [lambda_function.py]: Alexa skill entry point
 - [mobile_app/]: Mobile app source and backend
-- [ask_sdk_core/]: Alexa SDK core logic
+- [venv/]: Contains Alexa SDK dependencies for Lambda deployment
 - [requirements.txt]: Python dependencies
 - [.github/workflows/]: CI/CD workflows
 
