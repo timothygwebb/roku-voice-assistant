@@ -7,7 +7,7 @@ This project is currently in active development. Security updates are provided f
 | Version | Supported          |
 | ------- | ------------------ |
 | Latest  | ✅                 |
-| < Latest| ❌                 |
+| < Latest | ❌                 |
 
 ## Reporting a Vulnerability
 
