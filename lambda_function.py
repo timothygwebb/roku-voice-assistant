@@ -1,3 +1,21 @@
+"""
+Alexa Skill Lambda Function for Roku Voice Assistant
+
+This Lambda function handles Alexa voice commands to control a Roku device
+via the Roku External Control Protocol (ECP).
+
+CONFIGURATION REQUIRED:
+1. Set ROKU_IP_ADDRESS below to your Roku device's IP address
+   - Find your Roku IP: Settings → Network → About on your Roku device
+2. Deploy this function to AWS Lambda
+3. Link it to your Alexa Skill
+4. Ensure your Roku has "Control by mobile apps" enabled
+   - Settings → System → Advanced system settings → Control by mobile apps
+
+Dependencies are managed via requirements.txt and must be included in the
+deployment package.
+"""
+
 import logging
 import ask_sdk_core.utils as ask_utils
 
@@ -7,39 +25,45 @@ from ask_sdk_core.dispatch_components import AbstractExceptionHandler
 from ask_sdk_core.handler_input import HandlerInput
 
 from ask_sdk_model import Response
+import requests
 
 # Set up logging for the skill
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-# --- Roku Interaction Logic (
-import requests # Make sure 'requests' library is installed in your deployment package
-
-# Set up logging for the skill
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-
-# --- Roku Interaction Logic ---
-# Adapt your existing Roku control functions to work
-# within these intent handlers.
-# Replace with your Roku device's IP address.
-# In a real-world scenario, you'd likely want to store this securely,
-# perhaps in a database or a configuration service, and allow the user
-# to associate their Roku device with the Alexa skill.
-ROKU_IP_ADDRESS = "YOUR_ROKU_IP_ADDRESS"
+# --- Roku Configuration ---
+# IMPORTANT: Replace with your Roku device's IP address
+# In production, consider using environment variables or AWS Systems Manager Parameter Store
+ROKU_IP_ADDRESS = "YOUR_ROKU_IP_ADDRESS"  # Example: "192.168.1.100"
 ROKU_PORT = 8060
+
+# Roku App ID Catalog
+# These app IDs are standard across most Roku devices
+APP_CATALOG = {
+    "netflix": "12",
+    "hulu": "2285",
+    "youtube": "837",
+    "prime video": "13",
+    "amazon prime": "13",
+    "disney plus": "291097",
+    "disney+": "291097",
+    "hbo max": "61322",
+    "max": "61322",
+}
+
+# --- Roku Interaction Functions ---
 
 def send_roku_command(command_path, method="POST", params=None):
     """Sends a command to the Roku device via ECP."""
     url = f"http://{ROKU_IP_ADDRESS}:{ROKU_PORT}/{command_path}"
     try:
         if method == "POST":
-            response = requests.post(url, data="" if not params else params)
-        else: # Assuming GET for other methods
-            response = requests.get(url, params=params)
-        response.raise_for_status() # Raise an exception for HTTP errors
-        logger.info(f"Roku command '{command_path}' successful. Response: {response.text}")
-        return True, response.text
+            response = requests.post(url, data="" if not params else params, timeout=5)
+        else:  # GET
+            response = requests.get(url, params=params, timeout=5)
+        response.raise_for_status()
+        logger.info(f"Roku command '{command_path}' successful")
+        return True, "Command sent successfully"
     except requests.exceptions.RequestException as e:
         logger.error(f"Error sending Roku command '{command_path}': {e}")
         return False, str(e)
@@ -47,14 +71,10 @@ def send_roku_command(command_path, method="POST", params=None):
 def control_roku_keypress(key):
     """Simulates a keypress on the Roku remote."""
     success, message = send_roku_command(f"keypress/{key}")
-    if success:
-        return f"Sent {key} keypress to Roku."
-    else:
-        return f"Failed to send {key} keypress: {message}"
+    return f"Sent {key} command" if success else f"Failed: {message}"
 
 def control_roku_play_pause():
     """Simulates play/pause action on Roku."""
-    # The 'Play' key usually toggles play/pause depending on context
     return control_roku_keypress("Play")
 
 def control_roku_volume_up():
@@ -73,188 +93,74 @@ def control_roku_home():
     """Goes to the Roku home screen."""
     return control_roku_keypress("Home")
 
-def control_roku_search(content_title):
-    """Searches for content on Roku by opening the search screen and sending keypresses."""
-    # Note: Roku's native search functionality might be limited or require specific app support.
-    # This example sends individual keypresses to simulate typing.
-    # More advanced search might involve launching the built-in Roku search app first,
-    # then sending the text. Or, in some cases, deep linking directly if the app supports it.
-    # First, navigate to the Home screen (or potentially search app)
-    response_home = control_roku_home()
-    if "Failed" in response_home:
-        return f"Failed to go home before searching: {response_home}"
-    
-    # Wait a moment for the Roku to respond (this is a simple simulation, may need refinement)
-    # import time
-    # time.sleep(1) 
-    
-    # Simulate pressing the 'Search' button (if available or accessible via home screen)
-    # The 'Search' key might not be directly exposed via ECP, you might need to
-    # navigate using arrow keys to a search icon if a dedicated search keypress doesn't work.
-    # For a robust solution, you might need to launch a specific app and then send text.
-    
-    # For now, let's assume a generic search which might involve navigating
-    # to the search screen after going home.
-    # More practical approach: if you know the app ID of the search app, you could launch it.
-    
-    # A simple approach for generic search, assuming the content title can be typed
-    # without navigating first (unlikely for most apps, more for global search).
-    
-    # Consider using 'Search' keypress if your Roku has it directly accessible via ECP
-    # For now, we'll just simulate typing on the current screen.
-    
-    # Let's assume we're on the global search screen (which can be accessed via a specific sequence of presses)
-    # A more reliable method would be to find the app ID of the global search app (if it exists).
+def control_roku_back():
+    """Simulates back button."""
+    return control_roku_keypress("Back")
 
-    # For now, we'll try sending the characters.
-    # This might require prior navigation to a text input field.
-    
-    # If the user is expected to be on the search screen, you can type.
-    # The Roku 'Search' ECP command was deprecated, but you can simulate
-    # typing using 'keypress' events for alphanumeric characters.
-    
-    # Example: Simulating typing "Die Hard"
-    # This is a simplified approach and might not work universally without prior navigation.
-    # You would need to ensure the Roku is in a state where typing is possible (e.g., on a search screen).
-    
-    speak_output = f"Attempting to search for {content_title}. Note: This relies on Roku being on a search input screen or capable of receiving direct text input, which might not always be the case."
-    
-    for char in content_title:
-        # Roku ECP keypress for characters needs to be handled carefully.
-        # Often it's 'keypress/Lit_<character>' or simply 'keypress/<character>'
-        # depending on the Roku OS version and context.
-        # This example uses a generic approach; you might need to adapt.
-        key_to_send = f"Lit_{char.upper()}" if char.isalnum() else char # Simple guess for alphanumeric
-        control_roku_keypress(key_to_send) 
-        # Add a small delay if needed: time.sleep(0.1)
+def control_roku_select():
+    """Simulates select/OK button."""
+    return control_roku_keypress("Select")
 
-    # After typing, simulate pressing 'Enter' or 'Search' to submit
-    control_roku_keypress("Select") # Assuming 'Select' acts as Enter
-    
-    return f"Attempting to search for {content_title}. Check your Roku screen."
+def control_roku_rewind():
+    """Simulates rewind."""
+    return control_roku_keypress("Rev")
 
+def control_roku_fast_forward():
+    """Simulates fast forward."""
+    return control_roku_keypress("Fwd")
 
-def launch_app_on_roku(app_name):
-    """Launches an app on Roku."""
-    # You'll need a mapping of app names (like "Netflix") to their Roku App IDs.
-    # You can get a list of installed apps and their IDs using /query/apps ECP command.
-    # Example app_ids_mapping = {"Netflix": "12345", "Hulu": "67890"}
-    
-    # For demonstration, let's assume you have a way to get the App ID.
-    # In a real skill, you might query the Roku, or have a pre-defined list.
-    
-    # Placeholder: Replace with actual App ID lookup
-    app_id = get_roku_app_id_for_name(app_name)
+def control_roku_left():
+    """Simulates left directional."""
+    return control_roku_keypress("Left")
 
-    if app_id:
-        success, message = send_roku_command(f"launch/{app_id}")
-        if success:
-            return f"Launched {app_name} on Roku."
-        else:
-            return f"Failed to launch {app_name}: {message}"
-    else:
-        return f"Could not find Roku app ID for {app_name}. Please specify a valid app."
+def control_roku_right():
+    """Simulates right directional."""
+    return control_roku_keypress("Right")
+
+def control_roku_up():
+    """Simulates up directional."""
+    return control_roku_keypress("Up")
+
+def control_roku_down():
+    """Simulates down directional."""
+    return control_roku_keypress("Down")
 
 def get_roku_app_id_for_name(app_name):
     """
     Retrieves the Roku app ID for a given app name.
-    This would involve querying the Roku device for its installed apps.
-    This is a placeholder; you'd need to implement the actual ECP query for /query/apps
-    and parse the XML response to find the matching app ID.
+    Uses the APP_CATALOG dictionary for known apps.
     """
-    # Example of a hardcoded mapping (for testing)
-    app_name_to_id_map = {
-        "netflix": "12345", # Replace with actual app IDs
-        "hulu": "67890",
-        "youtube": "54321",
-        "prime video": "98765",
-        "disney plus": "11223"
-    }
-    return app_name_to_id_map.get(app_name.lower())
-
-# You can add more Roku interaction functions here as needed
-# for other commands like rewind, fast forward, directional keys, etc.
-
-# Example:
-def control_roku_rewind():
-    return control_roku_keypress("Rev")
-
-def control_roku_fast_forward():
-    return control_roku_keypress("Fwd")
-
-def control_roku_right():
-    return control_roku_keypress("Right")
-
-def control_roku_left():
-    return control_roku_keypress("Left")
-
-def control_roku_select():
-    return control_roku_keypress("Select")
-
-def control_roku_back():
-    return control_roku_keypress("Back")
-
-# Remember to ensure your Roku device has "Control by mobile apps" enabled
-# in Settings > System > Advanced system settings.
-# You'll need to adapt your existing Roku control functions to work
-# within these intent handlers.
-class PlayContentIntentHandler(AbstractRequestHandler):
-    # ... (can_handle and other setup)
-    def handle(self, handler_input):
-        slots = handler_input.request_envelope.request.intent.slots
-        content_title = slots["ContentTitle"].value
-        app_name = slots["App"].value
-
-        # Call your Roku control function
-        # Adapt this based on whether you're launching an app first, then searching,
-        # or relying on a more direct Roku search experience if feasible.
-        # This example prioritizes search as a fallback.
-        if app_name and content_title:
-            response_text_launch = launch_app_on_roku(app_name)
-            if "Failed" not in response_text_launch:
-                # Give the Roku a moment to launch the app
-                # time.sleep(2) # You might need a small delay here
-                response_text_search = control_roku_search(content_title)
-                speak_output = f"{response_text_launch} Then, {response_text_search}"
-            else:
-                speak_output = response_text_launch
-        elif content_title:
-            response_text_search = control_roku_search(content_title)
-            speak_output = response_text_search
-        else:
-            speak_output = "I need a title to play or search for."
-
-        return (
-            handler_input.response_builder
-                .speak(speak_output)
-                .response
-        )
-
-def control_roku_play_pause():
-    """Simulates play/pause action on Roku."""
-    # Replace with your actual Roku control code (e.g., sending HTTP requests)
-    logger.info("Simulating Roku Play/Pause")
-    return "Playing or pausing Roku."
-
-def control_roku_volume_up():
-    """Simulates volume up action on Roku."""
-    # Replace with your actual Roku control code
-    logger.info("Simulating Roku Volume Up")
-    return "Turning Roku volume up."
-
-def control_roku_search(content_title):
-    """Searches for content on Roku."""
-    # Replace with your actual Roku search logic
-    logger.info(f"Searching Roku for: {content_title}")
-    return f"Searching Roku for {content_title}."
+    normalized_name = app_name.lower().strip()
+    return APP_CATALOG.get(normalized_name)
 
 def launch_app_on_roku(app_name):
-    """Launches an app on Roku."""
-    # Replace with your actual Roku app launch logic
-    logger.info(f"Launching app: {app_name}")
-    return f"Launching {app_name} on Roku."
+    """Launches an app on Roku by name."""
+    app_id = get_roku_app_id_for_name(app_name)
+    
+    if app_id:
+        success, message = send_roku_command(f"launch/{app_id}")
+        if success:
+            return f"Launched {app_name}"
+        else:
+            return f"Failed to launch {app_name}: {message}"
+    else:
+        return f"App '{app_name}' not found. Try Netflix, Hulu, YouTube, Prime Video, Disney Plus, or HBO Max."
 
-# --- Alexa Skill Logic ---
+def control_roku_search(content_title):
+    """
+    Attempts to search for content on Roku.
+    Note: Direct text search via ECP is limited. This opens the home screen
+    as a fallback and notifies the user to search manually.
+    """
+    logger.info(f"Search requested for: {content_title}")
+    # Roku's ECP doesn't have a universal search command
+    # Best we can do is go to home and let the user search manually
+    control_roku_home()
+    return f"Please search for {content_title} manually from the Roku home screen"
+
+# --- Alexa Skill Intent Handlers ---
+
+# --- Alexa Skill Intent Handlers ---
 
 class LaunchRequestHandler(AbstractRequestHandler):
     """Handler for Skill Launch."""
@@ -271,20 +177,31 @@ class LaunchRequestHandler(AbstractRequestHandler):
         )
 
 class PlayContentIntentHandler(AbstractRequestHandler):
-    """Handler for PlayContentIntent."""
+    """Handler for PlayContentIntent - plays content or launches apps."""
     def can_handle(self, handler_input):
         return ask_utils.is_intent_name("PlayContentIntent")(handler_input)
 
     def handle(self, handler_input):
-        # Extract content title and app name from slots
         slots = handler_input.request_envelope.request.intent.slots
-        content_title = slots["ContentTitle"].value if "ContentTitle" in slots and slots["ContentTitle"].value else "something"
-        app_name = slots["App"].value if "App" in slots and slots["App"].value else "Roku"
+        content_title = slots.get("ContentTitle")
+        app_name = slots.get("App")
+        
+        content_title_value = content_title.value if content_title and content_title.value else None
+        app_name_value = app_name.value if app_name and app_name.value else None
 
-        # Call your Roku control function
-        response_text = control_roku_search(content_title) # Using search as an example
+        if app_name_value:
+            # Try to launch the app
+            response_text = launch_app_on_roku(app_name_value)
+            if content_title_value:
+                speak_output = f"{response_text}. {control_roku_search(content_title_value)}"
+            else:
+                speak_output = response_text
+        elif content_title_value:
+            # Just search for the content
+            speak_output = control_roku_search(content_title_value)
+        else:
+            speak_output = "I need either an app name or content title to help you."
 
-        speak_output = f"Okay, trying to play {content_title} on {app_name}. {response_text}"
         return (
             handler_input.response_builder
                 .speak(speak_output)
@@ -292,17 +209,21 @@ class PlayContentIntentHandler(AbstractRequestHandler):
         )
 
 class SearchContentIntentHandler(AbstractRequestHandler):
-    """Handler for SearchContentIntent."""
+    """Handler for SearchContentIntent - searches for content."""
     def can_handle(self, handler_input):
         return ask_utils.is_intent_name("SearchContentIntent")(handler_input)
 
     def handle(self, handler_input):
         slots = handler_input.request_envelope.request.intent.slots
-        content_title = slots["ContentTitle"].value if "ContentTitle" in slots and slots["ContentTitle"].value else "something"
+        content = slots.get("ContentTitle")
+        content_title = content.value if content and content.value else None
 
-        response_text = control_roku_search(content_title)
+        if content_title:
+            response_text = control_roku_search(content_title)
+            speak_output = f"Searching for {content_title}. {response_text}"
+        else:
+            speak_output = "What would you like me to search for?"
 
-        speak_output = f"Searching for {content_title} on Roku. {response_text}"
         return (
             handler_input.response_builder
                 .speak(speak_output)
@@ -310,25 +231,41 @@ class SearchContentIntentHandler(AbstractRequestHandler):
         )
 
 class ControlPlaybackIntentHandler(AbstractRequestHandler):
-    """Handler for ControlPlaybackIntent (e.g., play/pause, volume)."""
+    """Handler for ControlPlaybackIntent - controls playback and volume."""
     def can_handle(self, handler_input):
         return ask_utils.is_intent_name("ControlPlaybackIntent")(handler_input)
 
     def handle(self, handler_input):
         slots = handler_input.request_envelope.request.intent.slots
-        action = slots["Action"].value if "Action" in slots and slots["Action"].value else ""
+        action = slots.get("Action")
+        action_value = action.value.lower() if action and action.value else ""
 
-        speak_output = "I'm not sure what control action you want me to perform."
+        speak_output = "I'm not sure what you want me to do."
 
-        if action:
-            if "play" in action or "pause" in action:
-                response_text = control_roku_play_pause()
-                speak_output = f"Okay. {response_text}"
-            elif "volume up" in action:
-                response_text = control_roku_volume_up()
-                speak_output = f"Okay. {response_text}"
-            else:
-                speak_output = "I can only play, pause, or adjust volume for now."
+        if "play" in action_value or "pause" in action_value:
+            response_text = control_roku_play_pause()
+            speak_output = f"Okay. {response_text}"
+        elif "volume up" in action_value or "louder" in action_value:
+            response_text = control_roku_volume_up()
+            speak_output = f"Okay. {response_text}"
+        elif "volume down" in action_value or "quieter" in action_value:
+            response_text = control_roku_volume_down()
+            speak_output = f"Okay. {response_text}"
+        elif "mute" in action_value:
+            response_text = control_roku_mute()
+            speak_output = f"Okay. {response_text}"
+        elif "rewind" in action_value:
+            response_text = control_roku_rewind()
+            speak_output = f"Okay. {response_text}"
+        elif "forward" in action_value:
+            response_text = control_roku_fast_forward()
+            speak_output = f"Okay. {response_text}"
+        elif "home" in action_value:
+            response_text = control_roku_home()
+            speak_output = f"Okay. {response_text}"
+        elif "back" in action_value:
+            response_text = control_roku_back()
+            speak_output = f"Okay. {response_text}"
 
         return (
             handler_input.response_builder
@@ -337,19 +274,20 @@ class ControlPlaybackIntentHandler(AbstractRequestHandler):
         )
 
 class AppControlIntentHandler(AbstractRequestHandler):
-    """Handler for launching apps."""
+    """Handler for launching specific apps."""
     def can_handle(self, handler_input):
         return ask_utils.is_intent_name("AppControlIntent")(handler_input)
 
     def handle(self, handler_input):
         slots = handler_input.request_envelope.request.intent.slots
-        app_name = slots["App"].value if "App" in slots and slots["App"].value else ""
-
-        speak_output = "Which app would you like me to launch?"
+        app = slots.get("App")
+        app_name = app.value if app and app.value else None
 
         if app_name:
             response_text = launch_app_on_roku(app_name)
             speak_output = f"Okay. {response_text}"
+        else:
+            speak_output = "Which app would you like me to launch?"
 
         return (
             handler_input.response_builder
@@ -363,7 +301,13 @@ class HelpIntentHandler(AbstractRequestHandler):
         return ask_utils.is_intent_name("AMAZON.HelpIntent")(handler_input)
 
     def handle(self, handler_input):
-        speak_output = "You can ask me to play content, search for titles, or control playback. How can I help?"
+        speak_output = (
+            "You can ask me to launch apps like Netflix or Hulu, "
+            "control playback with play or pause, "
+            "adjust volume, "
+            "or navigate with commands like home or back. "
+            "What would you like to do?"
+        )
         return (
             handler_input.response_builder
                 .speak(speak_output)

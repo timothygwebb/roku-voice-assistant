@@ -25,6 +25,27 @@ Roku Voice Assistant lets you control your Roku device(s) using voice commands t
 - 🚀 **Quick App Launch**: One-tap access to streaming services
 - 🌐 **Cross-Platform**: Works on any modern mobile browser
 
+## Requirements
+
+### Alexa Integration (Lambda)
+- Python 3.10+
+- AWS account with Lambda access
+- Roku device with "Control by mobile apps" enabled
+
+Core dependencies (from `requirements.txt`):
+- boto3 (AWS SDK)
+- requests (HTTP client)
+- ask-sdk-core (Alexa Skills Kit)
+
+### Mobile App
+- Python 3.10+
+- Flask and related dependencies (included in `requirements.txt`)
+
+All dependencies can be installed with:
+```bash
+pip install -r requirements.txt
+```
+
 ## Quick Start
 
 ### Mobile App Setup (iPhone 13 / iOS)
@@ -56,15 +77,21 @@ Roku Voice Assistant lets you control your Roku device(s) using voice commands t
 ### Alexa Integration Setup
 
 1. Clone this repo.
-2. Set up a Python 3.11+ virtual environment.
+2. Set up a Python 3.10+ virtual environment.
 3. Install dependencies:
 
    ```bash
    pip install -r requirements.txt
    ```
 
-4. Configure your AWS credentials.
-5. Deploy `lambda_function.py` to AWS Lambda.
+4. Configure your Roku device IP address in `lambda_function.py`:
+   - Open `lambda_function.py`
+   - Replace `YOUR_ROKU_IP_ADDRESS` with your Roku's IP address
+   - Find your Roku IP: Settings → Network → About
+
+5. Configure your AWS credentials.
+6. Create a deployment package with all dependencies.
+7. Deploy `lambda_function.py` to AWS Lambda.
 
 ## Usage
 
@@ -93,9 +120,17 @@ See [mobile_app/README.md](mobile_app/README.md) for complete API documentation.
 
 ## Testing & CI
 
-- Code style is checked via Flake8 and Black.
-- Security scanning is automated by Bandit.
-- See `.github/workflows/*` for CI details.
+- **Linting**: Code style is checked with Flake8 and Black
+- **Security**: Automated security scanning with Bandit
+- **CI Workflows**: See `.github/workflows/voice-ci.yml` for automated checks
+
+To run linting locally:
+```bash
+pip install flake8 black bandit
+flake8 .
+black --check .
+bandit -r .
+```
 
 ## Browser Compatibility (Mobile App)
 
@@ -111,7 +146,10 @@ See [mobile_app/README.md](mobile_app/README.md) for complete API documentation.
 - [x] iOS/iPhone 13 optimization
 - [x] REST API for mobile communication
 - [x] Progressive Web App (PWA) support
-- [x] Add streaming app support.
-- [ ] Integrate Google Assistant.
-- [ ] Improve error handling and logging.
-- [ ] Expand documentation.
+- [x] Streaming app support (Netflix, Hulu, Disney+, Prime Video, YouTube, HBO Max)
+- [x] Voice command processing
+- [x] Error handling and timeout improvements
+- [ ] Integrate Google Assistant
+- [ ] Add authentication to mobile API
+- [ ] Support for custom Roku app configurations
+- [ ] Expand voice command vocabulary
