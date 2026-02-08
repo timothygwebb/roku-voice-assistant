@@ -25,13 +25,18 @@ class SuppressSSLHandshakeFilter(logging.Filter):
     """
     def filter(self, record):
         # Suppress SSL/TLS handshake errors (starts with \x16\x03 in hex)
-        # These manifest as "Bad request version", "Bad request syntax", or "Bad HTTP/0.9 request type"
+        # Werkzeug generates two log messages for SSL handshake attempts:
+        # 1. ERROR: "code 400, message Bad request syntax ('\x16\x03...')"
+        # 2. INFO: '"\x16\x03..." 400 -'
         message = record.getMessage()
         
         # Check for SSL/TLS handshake patterns
-        # SSL/TLS handshakes start with \x16\x03 (0x16 0x03 in hex)
-        if '\\x16\\x03' in message or '\x16\x03' in message:
-            # This is an SSL/TLS handshake attempt - suppress the error
+        # The bytes appear as literal bytes in the message string
+        if '\x16\x03' in message:
+            return False
+        
+        # Also check for the escaped form that might appear in repr()
+        if r'\x16\x03' in message or '\\x16\\x03' in message:
             return False
         
         return True  # Allow other messages
