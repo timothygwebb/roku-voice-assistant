@@ -129,6 +129,12 @@ def get_roku_app_id_for_name(app_name):
     """
     Retrieves the Roku app ID for a given app name.
     Uses the APP_CATALOG dictionary for known apps.
+    
+    Args:
+        app_name: Name of the app (case-insensitive)
+    
+    Returns:
+        str: App ID if found, None otherwise
     """
     normalized_name = app_name.lower().strip()
     return APP_CATALOG.get(normalized_name)
