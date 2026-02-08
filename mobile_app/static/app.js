@@ -5,7 +5,7 @@ let rokuIpAddress = localStorage.getItem('rokuIpAddress') || '';
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     loadConfig();
-    checkBrowserSupport();
+    updateVoiceButtonState();
 });
 
 // Configuration Management
@@ -68,12 +68,36 @@ function showStatus(message, type) {
 // Voice Recognition
 let recognition = null;
 
+function isIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent);
+}
+
 function checkBrowserSupport() {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        console.log('Speech recognition not supported');
-        return false;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    return SpeechRecognition !== undefined;
+}
+
+function updateVoiceButtonState() {
+    const voiceBtn = document.getElementById('voice-btn');
+    const voiceSection = document.querySelector('.voice-section');
+    
+    if (!checkBrowserSupport()) {
+        voiceBtn.disabled = true;
+        voiceBtn.style.opacity = '0.5';
+        voiceBtn.style.cursor = 'not-allowed';
+        
+        const supportText = document.createElement('p');
+        supportText.className = 'support-text';
+        supportText.textContent = 'Voice recognition not available. Please use a browser that supports Web Speech API (Chrome, Edge, or Safari on iOS 14.5+).';
+        supportText.style.color = '#ff6b6b';
+        supportText.style.fontSize = '0.9em';
+        supportText.style.marginTop = '10px';
+        
+        // Remove existing support text if any
+        const existing = voiceSection.querySelector('.support-text');
+        if (existing) existing.remove();
+        voiceSection.appendChild(supportText);
     }
-    return true;
 }
 
 function startVoiceRecognition() {
@@ -85,56 +109,62 @@ function startVoiceRecognition() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     
     if (!SpeechRecognition) {
-        showStatus('Voice recognition not supported on this device', 'error');
+        showStatus('Voice recognition not supported on this device. Please use Chrome, Edge, or update Safari.', 'error');
         return;
     }
     
-    recognition = new SpeechRecognition();
-    recognition.lang = 'en-US';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-    
-    const voiceBtn = document.getElementById('voice-btn');
-    const voiceResult = document.getElementById('voice-result');
-    
-    voiceBtn.classList.add('listening');
-    voiceResult.textContent = 'Listening...';
-    
-    recognition.start();
-    
-    recognition.onresult = function(event) {
-        const transcript = event.results[0][0].transcript;
-        voiceResult.textContent = `You said: "${transcript}"`;
-        processVoiceCommand(transcript);
-    };
-    
-    // Update the recognition.onerror handler to log the error and provide detailed feedback
-    recognition.onerror = function(event) {
-        console.error('Voice recognition error:', event.error);
-        let errorMessage = 'Voice recognition error';
-
-        switch (event.error) {
-            case 'no-speech':
-                errorMessage = 'No speech detected. Please try again.';
-                break;
-            case 'audio-capture':
-                errorMessage = 'No microphone detected. Please check your microphone settings.';
-                break;
-            case 'not-allowed':
-                errorMessage = 'Microphone access denied. Please allow microphone access in your browser settings.';
-                break;
-            default:
-                errorMessage = `An error occurred: ${event.error}`;
-        }
-
-        voiceResult.textContent = errorMessage;
-        showStatus(errorMessage, 'error');
-        voiceBtn.classList.remove('listening');
-    };
-    
-    recognition.onend = function() {
-        voiceBtn.classList.remove('listening');
-    };
+    try {
+        recognition = new SpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        recognition.continuous = false;
+        
+        const voiceBtn = document.getElementById('voice-btn');
+        const voiceResult = document.getElementById('voice-result');
+        
+        voiceBtn.classList.add('listening');
+        voiceResult.textContent = 'Listening...';
+        
+        recognition.start();
+        
+        // Add timeout for speech recognition (30 seconds)
+        const timeout = setTimeout(() => {
+            recognition.stop();
+        }, 30000);
+        
+        recognition.onresult = function(event) {
+            clearTimeout(timeout);
+            const transcript = event.results[0][0].transcript;
+            voiceResult.textContent = `You said: "${transcript}"`;
+            processVoiceCommand(transcript);
+        };
+        
+        recognition.onerror = function(event) {
+            clearTimeout(timeout);
+            let errorText = 'Error occurred in recognition';
+            
+            // Provide more specific error messages
+            if (event.error === 'no-speech') {
+                errorText = 'No speech detected. Please try again.';
+            } else if (event.error === 'network') {
+                errorText = 'Network error. Check your connection.';
+            } else if (event.error === 'not-allowed') {
+                errorText = 'Microphone permission denied. Check settings.';
+            }
+            
+            voiceResult.textContent = errorText;
+            showStatus(errorText, 'error');
+            voiceBtn.classList.remove('listening');
+        };
+        
+        recognition.onend = function() {
+            voiceBtn.classList.remove('listening');
+        };
+    } catch (error) {
+        console.error('Speech Recognition Error:', error);
+        showStatus('Failed to initialize voice recognition: ' + error.message, 'error');
+    }
 }
 
 function processVoiceCommand(command) {
