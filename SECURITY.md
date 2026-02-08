@@ -55,6 +55,6 @@ This repository uses several automated security scanning tools:
 - **CodeQL**: Semantic code analysis via GitHub Code Scanning (default setup)
   - Configured through GitHub repository settings (Security > Code security and analysis)
   - Runs automatically on push and pull requests
-  - Weekly scheduled scans to detect new vulnerabilities
+  - Includes scheduled scans (typically weekly) to detect new vulnerabilities
 
 **Note**: This project uses GitHub's CodeQL default setup rather than a custom workflow to avoid configuration conflicts. The default setup provides comprehensive security scanning with automatic updates to detection rules.
