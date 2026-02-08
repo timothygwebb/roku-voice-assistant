@@ -137,7 +137,7 @@ See [mobile_app/README.md](mobile_app/README.md) for complete API documentation.
 
 - **Security**: Automated security scanning with CodeQL (via GitHub default setup)
 - **CI Workflows**: See `.github/workflows/` for automated checks
-  - `voice-ci.yml`: Build and dependency checks
+  - `voice-ci.yml`: Environment setup and dependency installation (Python and ffmpeg)
 
 CodeQL security scanning is configured through GitHub's repository settings (Security > Code security and analysis) and runs automatically on push and pull requests.
 
