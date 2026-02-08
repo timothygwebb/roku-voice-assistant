@@ -34,7 +34,7 @@ logger.setLevel(logging.INFO)
 # --- Roku Configuration ---
 # IMPORTANT: Replace with your Roku device's IP address
 # In production, consider using environment variables or AWS Systems Manager Parameter Store
-ROKU_IP_ADDRESS = "YOUR_ROKU_IP_ADDRESS"  # Example: "192.168.1.100"
+ROKU_IP_ADDRESS = "YOUR_ROKU_IP_ADDRESS"  # Example: "192.0.2.100"
 ROKU_PORT = 8060
 
 # Roku App ID Catalog
@@ -155,7 +155,9 @@ def control_roku_search(content_title):
     logger.info(f"Search requested for: {content_title}")
     # Roku's ECP doesn't have a universal search command
     # Best we can do is go to home and let the user search manually
-    control_roku_home()
+    result = control_roku_home()
+    if "Failed" in result:
+        return f"Unable to navigate to home screen. {result}"
     return f"Please search for {content_title} manually from the Roku home screen"
 
 # --- Alexa Skill Intent Handlers ---

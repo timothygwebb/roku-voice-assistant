@@ -6,8 +6,8 @@ This project is currently in active development. Security updates are provided f
 
 | Version | Supported          |
 | ------- | ------------------ |
-| Latest  | :white_check_mark: |
-| < Latest| :x:                |
+| Latest  | ✅                 |
+| < Latest| ❌                 |
 
 ## Reporting a Vulnerability
 
