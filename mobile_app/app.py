@@ -174,11 +174,11 @@ def send_roku_command(command_path, method="POST", params=None):
 
     except requests.exceptions.HTTPError as e:
         logger.error(f"HTTP error for Roku command '{command_path}': {e}")
-        return False, f"HTTP error: {e}"
+        return False, "HTTP error while communicating with Roku"
 
     except requests.exceptions.RequestException as e:
         logger.error(f"Error sending Roku command '{command_path}': {e}")
-        return False, f"Request error: {e}"
+        return False, "Error sending command to Roku"
 
 # Routes
 
