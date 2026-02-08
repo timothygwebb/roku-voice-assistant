@@ -15,6 +15,31 @@ import re
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Custom logging filter to suppress SSL/TLS handshake errors on HTTP server
+class SuppressSSLHandshakeFilter(logging.Filter):
+    """Filter to suppress SSL/TLS handshake error messages in werkzeug logs.
+    
+    When clients attempt HTTPS connections to the HTTP server, werkzeug logs
+    'Bad request version' and 'Bad HTTP/0.9 request type' errors. These are
+    harmless but create log noise. This filter suppresses them.
+    """
+    def filter(self, record):
+        # Suppress SSL/TLS handshake errors (starts with \x16\x03 in hex)
+        # These manifest as "Bad request version", "Bad request syntax", or "Bad HTTP/0.9 request type"
+        message = record.getMessage()
+        
+        # Check for SSL/TLS handshake patterns
+        # SSL/TLS handshakes start with \x16\x03 (0x16 0x03 in hex)
+        if '\\x16\\x03' in message or '\x16\x03' in message:
+            # This is an SSL/TLS handshake attempt - suppress the error
+            return False
+        
+        return True  # Allow other messages
+
+# Apply the filter to werkzeug logger
+werkzeug_logger = logging.getLogger('werkzeug')
+werkzeug_logger.addFilter(SuppressSSLHandshakeFilter())
+
 # Initialize Flask app
 app = Flask(__name__, 
             static_folder='static',
