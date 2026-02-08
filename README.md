@@ -103,18 +103,27 @@ pip install -r requirements.txt
 
 ### Alexa
 
-- Use Alexa to invoke your custom skill and control your Roku TV
-- Supported commands: Power on/off, volume control, app launching
+Use Alexa to invoke your custom skill and control your Roku device:
+
+**Supported Commands:**
+- **App launching**: "Alexa, ask Roku to open Netflix"
+- **Playback control**: "Alexa, ask Roku to play", "Alexa, ask Roku to pause"
+- **Volume control**: "Alexa, ask Roku to turn up the volume", "Alexa, ask Roku to mute"
+- **Navigation**: "Alexa, ask Roku to go home", "Alexa, ask Roku to go back"
+- **Search**: "Alexa, ask Roku to search for [content]" (opens home screen for manual search)
+
+Note: Configure your Roku IP in `lambda_function.py` before deploying to AWS Lambda.
 
 ## API Endpoints
 
 The mobile API server provides REST endpoints:
 
-- `POST /api/keypress` - Send remote control commands
-- `POST /api/launch` - Launch streaming apps
-- `POST /api/voice` - Process voice commands
-- `POST /api/config` - Configure Roku IP address
-- `GET /api/status` - Check device status
+- `POST /api/keypress` - Send remote control commands (e.g., `{"key": "Home"}`)
+- `POST /api/launch` - Launch streaming apps (e.g., `{"app_name": "Netflix"}`)
+- `POST /api/voice` - Process voice commands (e.g., `{"command": "play"}`)
+- `POST /api/config` - Configure Roku IP address (e.g., `{"roku_ip": "192.168.1.100"}`)
+- `GET /api/config` - Get current Roku IP configuration
+- `GET /api/status` - Check API and Roku device status
 
 See [mobile_app/README.md](mobile_app/README.md) for complete API documentation.
 

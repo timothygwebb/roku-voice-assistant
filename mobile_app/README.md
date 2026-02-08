@@ -115,7 +115,7 @@ The mobile API server exposes the following REST endpoints:
    }
    ```
 
-- `GET /api/config` - Get current configuration
+- `GET /api/config` - Get current Roku IP configuration
 
 ### Control
 
