@@ -49,7 +49,7 @@ The maintainers will respond to security reports within 48 hours and work to rel
 
 ## Automated Security Scanning
 
-This repository uses automated security scanning tools:
+This repository uses an automated security scanning tool:
 
 - **CodeQL**: Semantic code analysis via GitHub Code Scanning (default setup)
   - Configured through GitHub repository settings (Security > Code security and analysis)
