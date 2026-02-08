@@ -136,8 +136,11 @@ See [mobile_app/README.md](mobile_app/README.md) for complete API documentation.
 ## Testing & CI
 
 - **Linting**: Code style is checked with Flake8 and Black
-- **Security**: Automated security scanning with Bandit
-- **CI Workflows**: See `.github/workflows/voice-ci.yml` for automated checks
+- **Security**: Automated security scanning with Bandit and CodeQL
+- **CI Workflows**: See `.github/workflows/` for automated checks
+  - `voice-ci.yml`: Build and dependency checks
+  - `lint-and-security.yml`: Code style and security scanning
+  - `codeql.yml`: Advanced security analysis (runs weekly and on push/PR)
 
 To run linting locally:
 
