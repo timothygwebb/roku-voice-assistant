@@ -157,7 +157,8 @@ def control_roku_search(content_title):
     # Best we can do is go to home and let the user search manually
     result = control_roku_home()
     if "Failed" in result:
-        return f"Unable to navigate to home screen. {result}"
+        logger.warning(f"Failed to navigate home for search: {result}")
+        return "Unable to navigate to home screen. Please check your Roku connection."
     return f"Please search for {content_title} manually from the Roku home screen"
 
 # --- Alexa Skill Intent Handlers ---
