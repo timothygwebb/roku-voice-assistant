@@ -19,24 +19,32 @@ A mobile-optimized Progressive Web App (PWA) for controlling your Roku device fr
 
 1. Python 3.10 or higher
 2. A Roku device on the same network
-3. Roku's "Control by mobile apps" enabled (Settings > System > Advanced system settings)
+3. Roku's "Control by mobile apps" enabled (Settings → System → Advanced system settings)
 
-### Installation
+## Installation
 
-1. Install dependencies:
+### Install Dependencies
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+All required dependencies are in the main repository's `requirements.txt`:
 
-2. Start the mobile API server:
+```bash
+# From the repository root
+pip install -r requirements.txt
+```
 
-   ```bash
-   cd mobile_app
-   python app.py
-   ```
+This includes:
+- Flask and Flask-CORS for the web server
+- Requests library for Roku communication
+- Gunicorn for production deployment (optional)
 
-3. The server will start on `http://0.0.0.0:5000`
+### Start the Server
+
+```bash
+cd mobile_app
+python app.py
+```
+
+The server will start on `http://0.0.0.0:5000` by default.
 
 ### Mobile Device Setup
 
@@ -55,7 +63,7 @@ A mobile-optimized Progressive Web App (PWA) for controlling your Roku device fr
 3. **Configure Roku**:
    - Open the app from your home screen
    - Enter your Roku device's IP address
-   - Find your Roku IP: Settings > Network > About
+   - Find your Roku IP: Settings → Network → About
    - Tap "Save" to store the configuration
 
 4. **Grant Microphone Permission** (for voice control):
@@ -105,7 +113,7 @@ The mobile API server exposes the following REST endpoints:
    }
    ```
 
-- `GET /api/config` - Get current configuration
+- `GET /api/config` - Get current Roku IP configuration
 
 ### Control
 
@@ -240,10 +248,6 @@ To modify the mobile interface:
    - iOS: Safari Web Inspector
    - Android: Chrome DevTools
 
-## License
+## Contributing
 
-See main repository LICENSE file.
-
-## Support
-
-For issues and questions, please open an issue on GitHub.
+This project is part of the Roku Voice Assistant repository. For issues and questions, please open an issue on GitHub.
