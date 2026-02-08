@@ -30,14 +30,10 @@ class SuppressSSLHandshakeFilter(logging.Filter):
         # 2. INFO: '"\x16\x03..." 400 -'
         message = record.getMessage()
         
-        # Check for SSL/TLS handshake patterns
-        # The bytes appear as literal bytes in the message string
-        if '\x16\x03' in message:
-            return False
-        
-        # Also check for the escaped form that might appear in repr()
-        if r'\x16\x03' in message or '\\x16\\x03' in message:
-            return False
+        # Check for SSL/TLS handshake patterns in various forms
+        # (literal bytes, raw string, or double-escaped)
+        if '\x16\x03' in message or r'\x16\x03' in message or '\\x16\\x03' in message:
+            return False  # Suppress SSL/TLS handshake errors
         
         return True  # Allow other messages
 
