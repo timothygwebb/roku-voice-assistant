@@ -33,6 +33,7 @@ pip install -r requirements.txt
 ```
 
 This includes:
+
 - Flask and Flask-CORS for the web server
 - Requests library for Roku communication
 - Gunicorn for production deployment (optional)

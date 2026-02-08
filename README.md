@@ -28,21 +28,25 @@ Roku Voice Assistant lets you control your Roku device(s) using voice commands t
 ## Requirements
 
 ### Alexa Integration (Lambda)
+
 - Python 3.10+
 - AWS account with Lambda access
 - Roku device with "Control by mobile apps" enabled
 
 Core Python package dependencies (from `requirements.txt`):
+
 - boto3 (AWS SDK)
 - requests (HTTP client)
 
 Alexa SDK functionality is provided by vendored modules in this repo (e.g., `ask_sdk_core/`, `ask_sdk_model/`, `ask_sdk/`, `ask_sdk_dynamodb/`, `ask_sdk_runtime/`), so no additional Alexa SDK packages need to be installed via `requirements.txt`.
 
 ### Mobile App
+
 - Python 3.10+
 - Flask and related dependencies (included in `requirements.txt`)
 
 All dependencies can be installed with:
+
 ```bash
 pip install -r requirements.txt
 ```
@@ -107,6 +111,7 @@ pip install -r requirements.txt
 Use Alexa to invoke your custom skill and control your Roku device:
 
 **Supported Commands:**
+
 - **App launching**: "Alexa, ask Roku to open Netflix"
 - **Playback control**: "Alexa, ask Roku to play", "Alexa, ask Roku to pause"
 - **Volume control**: "Alexa, ask Roku to turn up the volume", "Alexa, ask Roku to mute"
@@ -135,6 +140,7 @@ See [mobile_app/README.md](mobile_app/README.md) for complete API documentation.
 - **CI Workflows**: See `.github/workflows/voice-ci.yml` for automated checks
 
 To run linting locally:
+
 ```bash
 pip install flake8 black bandit
 flake8 .

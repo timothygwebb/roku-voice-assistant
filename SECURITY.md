@@ -26,6 +26,7 @@ The maintainers will respond to security reports within 48 hours and work to rel
 ## Security Considerations
 
 ### For Mobile App Deployment
+
 - Use HTTPS in production (required for voice recognition and PWA features)
 - Implement authentication for the API endpoints
 - Add rate limiting to prevent abuse
@@ -33,12 +34,14 @@ The maintainers will respond to security reports within 48 hours and work to rel
 - Never commit Roku IP addresses or credentials to version control
 
 ### For Alexa Lambda Deployment
+
 - Store Roku IP securely (use environment variables or AWS Systems Manager Parameter Store)
 - Implement proper error handling to avoid leaking sensitive information
 - Keep dependencies up to date
 - Use AWS IAM roles with minimal required permissions
 
 ### General Best Practices
+
 - Keep all dependencies updated regularly
 - Review code changes for security issues before deployment
 - Enable "Control by mobile apps" on Roku only when needed
