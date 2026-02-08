@@ -108,9 +108,27 @@ function startVoiceRecognition() {
         processVoiceCommand(transcript);
     };
     
+    // Update the recognition.onerror handler to log the error and provide detailed feedback
     recognition.onerror = function(event) {
-        voiceResult.textContent = 'Error occurred in recognition';
-        showStatus('Voice recognition error', 'error');
+        console.error('Voice recognition error:', event.error);
+        let errorMessage = 'Voice recognition error';
+
+        switch (event.error) {
+            case 'no-speech':
+                errorMessage = 'No speech detected. Please try again.';
+                break;
+            case 'audio-capture':
+                errorMessage = 'No microphone detected. Please check your microphone settings.';
+                break;
+            case 'not-allowed':
+                errorMessage = 'Microphone access denied. Please allow microphone access in your browser settings.';
+                break;
+            default:
+                errorMessage = `An error occurred: ${event.error}`;
+        }
+
+        voiceResult.textContent = errorMessage;
+        showStatus(errorMessage, 'error');
         voiceBtn.classList.remove('listening');
     };
     

@@ -134,17 +134,25 @@ def send_roku_command(command_path, method="POST", params=None):
     
     try:
         if method == "POST":
-            response = requests.post(url, data="" if not params else params, timeout=5)
+            response = requests.post(url, data="" if not params else params, timeout=10)  # Increased timeout to 10 seconds
         else:
-            response = requests.get(url, params=params, timeout=5)
+            response = requests.get(url, params=params, timeout=10)  # Increased timeout to 10 seconds
         
         response.raise_for_status()
         logger.info(f"Roku command '{command_path}' successful")
         return True, "Command sent successfully"
     
+    except requests.exceptions.ConnectTimeout:
+        logger.error(f"Connection to Roku timed out for command '{command_path}'")
+        return False, "Connection to Roku timed out"
+
+    except requests.exceptions.HTTPError as e:
+        logger.error(f"HTTP error for Roku command '{command_path}': {e}")
+        return False, f"HTTP error: {e}"
+
     except requests.exceptions.RequestException as e:
         logger.error(f"Error sending Roku command '{command_path}': {e}")
-        return False, str(e)
+        return False, f"Request error: {e}"
 
 # Routes
 
