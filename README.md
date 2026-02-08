@@ -38,8 +38,21 @@ Core Python package dependencies (from `requirements.txt`):
 - boto3 (AWS SDK)
 - requests (HTTP client)
 
-Alexa SDK functionality is included for AWS Lambda deployment in the repository's vendored `venv/` directory (packaged with Lambda deployment), so the Alexa SDK packages do not need to be listed in `requirements.txt` for local development of the mobile app.
+Alexa SDK functionality for the Lambda skill is vendored in this repository under the legacy virtualenv at `venv/lib/python2.7/site-packages/`. That directory is **only** used when building the Lambda deployment ZIP (it is bundled alongside `lambda_function.py`) and is not intended to be your local Python 3.10+ virtual environment.
 
+If you want to run `lambda_function.py` locally with Python 3.10+ (for example, to debug the Alexa skill), you must either:
+
+- Install the Alexa SDK packages into your local environment (recommended), e.g.:
+  - `ask_sdk_core`
+  - `ask_sdk_model`
+  - `ask_sdk_runtime`
+  - `ask_sdk_dynamodb`
+
+  or
+
+- Temporarily add the vendored site-packages directory (`venv/lib/python2.7/site-packages/`) to your `PYTHONPATH` so that `ask_sdk_*` modules can be imported.
+
+The Alexa SDK is therefore **not** listed in `requirements.txt`; that file only covers shared/core dependencies and the mobile app/backend server dependencies for local development.
 ### Mobile App
 
 - Python 3.10+
