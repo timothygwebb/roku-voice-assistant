@@ -174,11 +174,11 @@ def send_roku_command(command_path, method="POST", params=None):
 
     except requests.exceptions.HTTPError as e:
         logger.error(f"HTTP error for Roku command '{command_path}': {e}")
-        return False, f"HTTP error: {e}"
+        return False, "HTTP error while communicating with Roku"
 
     except requests.exceptions.RequestException as e:
         logger.error(f"Error sending Roku command '{command_path}': {e}")
-        return False, f"Request error: {e}"
+        return False, "Error sending command to Roku"
 
 # Routes
 
@@ -359,4 +359,5 @@ if __name__ == '__main__':
     # Run the server
     # For production, use a proper WSGI server like gunicorn
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    debug_mode = os.environ.get('FLASK_DEBUG', '0').lower() in ('1', 'true', 'yes', 'on')
+    app.run(host='0.0.0.0', port=port, debug=debug_mode)
