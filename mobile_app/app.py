@@ -345,6 +345,16 @@ def status():
         'roku_reachable': roku_reachable
     })
 
+@app.route('/api/power', methods=['POST'])
+def power():
+    """Toggle power on/off for Roku"""
+    success, message = send_roku_command("keypress/Power")
+
+    return jsonify({
+        'success': success,
+        'message': message
+    })
+
 @app.errorhandler(404)
 def not_found(error):
     """Handle 404 errors"""
@@ -356,8 +366,7 @@ def internal_error(error):
     return jsonify({'success': False, 'message': 'Internal server error'}), 500
 
 if __name__ == '__main__':
-    # Run the server
-    # For production, use a proper WSGI server like gunicorn
+    # Run the server without SSL as a temporary fix
     port = int(os.environ.get('PORT', 5000))
     debug_mode = os.environ.get('FLASK_DEBUG', '0').lower() in ('1', 'true', 'yes', 'on')
     app.run(host='0.0.0.0', port=port, debug=debug_mode)

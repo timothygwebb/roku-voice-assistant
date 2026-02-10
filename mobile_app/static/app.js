@@ -74,7 +74,24 @@ function isIOS() {
 
 function checkBrowserSupport() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    return SpeechRecognition !== undefined;
+    const isSupported = SpeechRecognition !== undefined;
+
+    if (!isSupported) {
+        return false;
+    }
+
+    // Check if microphone permissions are granted
+    navigator.permissions.query({ name: 'microphone' }).then(permissionStatus => {
+        if (permissionStatus.state === 'denied') {
+            showStatus('Microphone access is denied. Please enable it in your browser settings.', 'error');
+        } else if (permissionStatus.state === 'prompt') {
+            showStatus('Please allow microphone access to use voice recognition.', 'error');
+        }
+    }).catch(error => {
+        console.error('Error checking microphone permissions:', error);
+    });
+
+    return isSupported;
 }
 
 function updateVoiceButtonState() {
@@ -243,6 +260,32 @@ function launchApp(appName, appId) {
     })
     .catch(error => {
         showStatus('Failed to launch app', 'error');
+        console.error('Error:', error);
+    });
+}
+
+function togglePower() {
+    if (!rokuIpAddress) {
+        showStatus('Please configure your Roku IP address first', 'error');
+        return;
+    }
+
+    fetch(`${API_BASE_URL}/api/power`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showStatus('Power toggled', 'success');
+        } else {
+            showStatus(data.message || 'Failed to toggle power', 'error');
+        }
+    })
+    .catch(error => {
+        showStatus('Failed to toggle power', 'error');
         console.error('Error:', error);
     });
 }
