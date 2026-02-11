@@ -1,0 +1,14 @@
+[Unit]
+Description=Gunicorn instance to serve Roku Voice Assistant
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/path/to/mobile_app
+ExecStart=/usr/local/bin/gunicorn -c gunicorn_config.py app:app
+Restart=always
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,14 @@
+[Unit]
+Description=Roku Voice Assistant Flask API Service
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/path/to/your/project/mobile_app
+ExecStart=/usr/bin/env gunicorn -b 0.0.0.0:5000 app:app
+Restart=always
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
