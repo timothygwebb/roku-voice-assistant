@@ -63,3 +63,4 @@ node_modules/
 /.vs
 /certbot-5.3.1
 /bin/Debug/net10.0
+/obj
