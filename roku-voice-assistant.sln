@@ -1,0 +1,18 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Solution for Roku Voice Assistant
+# This solution includes the Alexa Lambda function, mobile app backend, and configuration files.
+
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lambda_function", "lambda_function.py", "{A1B2C3D4-E5F6-47A8-9B0C-1234567890AB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mobile_app", "mobile_app\app.py", "{B2C3D4E5-F6A7-48B9-0C1D-234567890ABC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "requirements", "requirements.txt", "{C3D4E5F6-A7B8-49C0-1D2E-34567890ABCD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "github_config", ".github\copilot-instructions.md", "{D4E5F6A7-B8C9-40D1-2E3F-4567890ABCDE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+EndGlobal
