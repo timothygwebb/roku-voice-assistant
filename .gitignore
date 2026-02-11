@@ -62,3 +62,4 @@ node_modules/
 *.zip
 /.vs
 /certbot-5.3.1
+/bin/Debug/net10.0
