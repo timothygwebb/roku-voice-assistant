@@ -4,8 +4,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>dotnet-roku_worker_service-163c7404-e24c-4d07-846f-1b211163d58e</UserSecretsId>
-    <RootNamespace>roku_worker_service</RootNamespace>
+    <UserSecretsId>dotnet-roku-voice-assistant-163c7404-e24c-4d07-846f-1b211163d58e</UserSecretsId>
+    <RootNamespace>roku-voice-assistant</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

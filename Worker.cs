@@ -1,4 +1,4 @@
-namespace roku_worker_service
+namespace roku-voice-assistant
 {
 	public class Worker(ILogger<Worker> logger) : BackgroundService
 	{

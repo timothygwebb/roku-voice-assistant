@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace roku_worker_service
+namespace roku-voice-assistant
 {
     public class PythonFlaskLauncher : BackgroundService
     {
