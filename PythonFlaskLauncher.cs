@@ -1,16 +1,12 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace roku-voice-assistant
+namespace roku_voice_assistant
 {
-    public class PythonFlaskLauncher : BackgroundService
+    public class PythonFlaskLauncher(ILogger<PythonFlaskLauncher> logger) : BackgroundService
     {
         private Process? _flaskProcess;
-        private readonly ILogger<PythonFlaskLauncher> _logger;
-        public PythonFlaskLauncher(ILogger<PythonFlaskLauncher> logger)
-        {
-            _logger = logger;
-        }
+        private readonly ILogger<PythonFlaskLauncher> _logger = logger;
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -29,7 +25,11 @@ namespace roku-voice-assistant
                 WorkingDirectory = Path.GetDirectoryName(scriptPath) ?? "."
             };
 
-            _logger.LogInformation($"Starting Flask backend: {pythonExe} {psi.Arguments}");
+            if (_logger.IsEnabled(LogLevel.Information))
+            {
+                _logger.LogInformation("Starting Flask backend: {PythonExe} {Arguments}", pythonExe, psi.Arguments);
+            }
+
             _flaskProcess = Process.Start(psi);
 
             if (_flaskProcess != null)
@@ -38,24 +38,27 @@ namespace roku-voice-assistant
                 { 
                     if (!string.IsNullOrWhiteSpace(e.Data)) 
                     {
-                        _logger.LogInformation($"Flask Output: {e.Data}"); 
+                        if (_logger.IsEnabled(LogLevel.Information))
+                        {
+                            _logger.LogInformation("Flask Output: {Data}", e.Data); 
+                        }
                     } 
                 };
                 _flaskProcess.ErrorDataReceived += (s, e) => 
                 { 
                     if (!string.IsNullOrWhiteSpace(e.Data)) 
                     {
-                        if (e.Data.ToLower().Contains("error") || e.Data.ToLower().Contains("fail"))
+                        if (e.Data.Contains("error", StringComparison.OrdinalIgnoreCase) || e.Data.Contains("fail", StringComparison.OrdinalIgnoreCase))
                         {
-                            _logger.LogError($"Flask Error: {e.Data}");
+                            _logger.LogError("Flask Error: {Data}", e.Data);
                         }
-                        else if (e.Data.ToLower().Contains("warning"))
+                        else if (e.Data.Contains("warning", StringComparison.OrdinalIgnoreCase))
                         {
-                            _logger.LogWarning($"Flask Warning: {e.Data}");
+                            _logger.LogWarning("Flask Warning: {Data}", e.Data);
                         }
-                        else
+                        else if (_logger.IsEnabled(LogLevel.Information))
                         {
-                            _logger.LogInformation($"Flask Log: {e.Data}");
+                            _logger.LogInformation("Flask Log: {Data}", e.Data);
                         }
                     } 
                 };
@@ -67,7 +70,10 @@ namespace roku-voice-assistant
             try
             {
                 string url = "http://localhost:5000/";
-                _logger.LogInformation($"Opening browser to {url}");
+                if (_logger.IsEnabled(LogLevel.Information))
+                {
+                    _logger.LogInformation("Opening browser to {Url}", url);
+                }
                 try
                 {
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -79,11 +85,11 @@ namespace roku-voice-assistant
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning($"Could not open browser: {ex.Message}");
+                    _logger.LogWarning("Could not open browser: {Message}", ex.Message);
                 }
 
                 // Wait until cancellation
-                await stoppingToken.WaitHandle.WaitOneAsync();
+                await Task.Delay(Timeout.Infinite, stoppingToken);
             }
             finally
             {
