@@ -34,8 +34,31 @@ namespace roku_worker_service
 
             if (_flaskProcess != null)
             {
-                _flaskProcess.OutputDataReceived += (s, e) => { if (e.Data != null) _logger.LogInformation(e.Data); };
-                _flaskProcess.ErrorDataReceived += (s, e) => { if (e.Data != null) _logger.LogError(e.Data); };
+                _flaskProcess.OutputDataReceived += (s, e) => 
+                { 
+                    if (!string.IsNullOrWhiteSpace(e.Data)) 
+                    {
+                        _logger.LogInformation($"Flask Output: {e.Data}"); 
+                    } 
+                };
+                _flaskProcess.ErrorDataReceived += (s, e) => 
+                { 
+                    if (!string.IsNullOrWhiteSpace(e.Data)) 
+                    {
+                        if (e.Data.ToLower().Contains("error") || e.Data.ToLower().Contains("fail"))
+                        {
+                            _logger.LogError($"Flask Error: {e.Data}");
+                        }
+                        else if (e.Data.ToLower().Contains("warning"))
+                        {
+                            _logger.LogWarning($"Flask Warning: {e.Data}");
+                        }
+                        else
+                        {
+                            _logger.LogInformation($"Flask Log: {e.Data}");
+                        }
+                    } 
+                };
                 _flaskProcess.BeginOutputReadLine();
                 _flaskProcess.BeginErrorReadLine();
             }
@@ -60,10 +83,7 @@ namespace roku_worker_service
                 }
 
                 // Wait until cancellation
-                while (!stoppingToken.IsCancellationRequested)
-                {
-                    await Task.Delay(1000, stoppingToken);
-                }
+                await stoppingToken.WaitHandle.WaitOneAsync();
             }
             finally
             {
