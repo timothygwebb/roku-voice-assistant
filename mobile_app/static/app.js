@@ -5,7 +5,7 @@ let rokuIpAddress = localStorage.getItem('rokuIpAddress') || '';
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     loadConfig();
-    updateVoiceButtonState();
+    checkBrowserSupport();
 });
 
 // Configuration Management
@@ -92,29 +92,6 @@ function checkBrowserSupport() {
     });
 
     return isSupported;
-}
-
-function updateVoiceButtonState() {
-    const voiceBtn = document.getElementById('voice-btn');
-    const voiceSection = document.querySelector('.voice-section');
-    
-    if (!checkBrowserSupport()) {
-        voiceBtn.disabled = true;
-        voiceBtn.style.opacity = '0.5';
-        voiceBtn.style.cursor = 'not-allowed';
-        
-        const supportText = document.createElement('p');
-        supportText.className = 'support-text';
-        supportText.textContent = 'Voice recognition not available. Please use a browser that supports Web Speech API (Chrome, Edge, or Safari on iOS 14.5+).';
-        supportText.style.color = '#ff6b6b';
-        supportText.style.fontSize = '0.9em';
-        supportText.style.marginTop = '10px';
-        
-        // Remove existing support text if any
-        const existing = voiceSection.querySelector('.support-text');
-        if (existing) existing.remove();
-        voiceSection.appendChild(supportText);
-    }
 }
 
 function startVoiceRecognition() {
