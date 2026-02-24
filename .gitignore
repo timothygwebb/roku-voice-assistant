@@ -65,3 +65,7 @@ node_modules/
 /bin/Debug/net10.0
 /obj
 /mobile_app/config.json
+/mobile_app/alt1-key.pem
+/mobile_app/acert.pem
+/mobile_app/cert.pem
+/mobile_app/key.pem
