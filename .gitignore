@@ -64,3 +64,4 @@ node_modules/
 /certbot-5.3.1
 /bin/Debug/net10.0
 /obj
+/mobile_app/config.json
