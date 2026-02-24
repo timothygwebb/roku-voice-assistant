@@ -10,6 +10,7 @@ import logging
 import os
 import json
 import re
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -365,8 +366,14 @@ def internal_error(error):
     """Handle 500 errors"""
     return jsonify({'success': False, 'message': 'Internal server error'}), 500
 
+# Update to use port 443 for HTTPS
 if __name__ == '__main__':
-    # Run the server without SSL as a temporary fix
-    port = int(os.environ.get('PORT', 5000))
-    debug_mode = os.environ.get('FLASK_DEBUG', '0').lower() in ('1', 'true', 'yes', 'on')
-    app.run(host='0.0.0.0', port=port, debug=debug_mode)
+    # Path to SSL certificate and key files
+    cert_path = os.path.join(os.getcwd(), 'cert.pem')
+    key_path = os.path.join(os.getcwd(), 'key.pem')
+
+    if os.path.exists(cert_path) and os.path.exists(key_path):
+        app.run(host='localhost', port=443, ssl_context=(cert_path, key_path))
+    else:
+        logger.warning('SSL certificate or key not found. Running without HTTPS.')
+        app.run(host='localhost', port=443)

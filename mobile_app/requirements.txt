@@ -1,0 +1,11 @@
+# Python dependencies
+Flask
+Flask-Cors
+requests
+pyopenssl
+
+# Add Gunicorn for production-ready WSGI server
+gunicorn
+
+# Add Waitress for production-ready WSGI server
+waitress

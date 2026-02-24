@@ -1,6 +1,5 @@
-// Configuration
-const API_BASE_URL = window.location.origin;
-let rokuIpAddress = localStorage.getItem('rokuIpAddress') || '';
+// Update API_BASE_URL to use https://localhost
+const API_BASE_URL = 'https://localhost';
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
