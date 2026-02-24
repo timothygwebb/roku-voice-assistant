@@ -77,6 +77,7 @@ function checkBrowserSupport() {
     const isSupported = SpeechRecognition !== undefined;
 
     if (!isSupported) {
+        showStatus('Voice recognition is not supported in this browser. Please use a supported browser like Chrome, Edge, or Safari.', 'error');
         return false;
     }
 
@@ -89,6 +90,7 @@ function checkBrowserSupport() {
         }
     }).catch(error => {
         console.error('Error checking microphone permissions:', error);
+        showStatus('Unable to check microphone permissions. Please ensure your browser supports microphone access.', 'error');
     });
 
     return isSupported;
@@ -99,187 +101,23 @@ function startVoiceRecognition() {
         showStatus('Please configure your Roku IP address first', 'error');
         return;
     }
-    
+
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    
+
     if (!SpeechRecognition) {
-        showStatus('Voice recognition not supported on this device. Please use Chrome, Edge, or update Safari.', 'error');
+        showStatus('Voice recognition is not supported on this device. Please use a supported browser like Chrome, Edge, or Safari.', 'error');
         return;
     }
-    
+
     try {
         recognition = new SpeechRecognition();
         recognition.lang = 'en-US';
         recognition.interimResults = false;
         recognition.maxAlternatives = 1;
         recognition.continuous = false;
-        
+
         const voiceBtn = document.getElementById('voice-btn');
         const voiceResult = document.getElementById('voice-result');
-        
+
         voiceBtn.classList.add('listening');
-        voiceResult.textContent = 'Listening...';
-        
-        recognition.start();
-        
-        // Add timeout for speech recognition (30 seconds)
-        const timeout = setTimeout(() => {
-            recognition.stop();
-        }, 30000);
-        
-        recognition.onresult = function(event) {
-            clearTimeout(timeout);
-            const transcript = event.results[0][0].transcript;
-            voiceResult.textContent = `You said: "${transcript}"`;
-            processVoiceCommand(transcript);
-        };
-        
-        recognition.onerror = function(event) {
-            clearTimeout(timeout);
-            let errorText = 'Error occurred in recognition';
-            
-            // Provide more specific error messages
-            if (event.error === 'no-speech') {
-                errorText = 'No speech detected. Please try again.';
-            } else if (event.error === 'network') {
-                errorText = 'Network error. Check your connection.';
-            } else if (event.error === 'not-allowed') {
-                errorText = 'Microphone permission denied. Check settings.';
-            }
-            
-            voiceResult.textContent = errorText;
-            showStatus(errorText, 'error');
-            voiceBtn.classList.remove('listening');
-        };
-        
-        recognition.onend = function() {
-            voiceBtn.classList.remove('listening');
-        };
-    } catch (error) {
-        console.error('Speech Recognition Error:', error);
-        showStatus('Failed to initialize voice recognition: ' + error.message, 'error');
-    }
-}
-
-function processVoiceCommand(command) {
-    const lowerCommand = command.toLowerCase();
-    
-    // Send to backend for processing
-    fetch(`${API_BASE_URL}/api/voice`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ command: command })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showStatus(data.message || 'Command executed', 'success');
-        } else {
-            showStatus(data.message || 'Command failed', 'error');
-        }
-    })
-    .catch(error => {
-        showStatus('Failed to process voice command', 'error');
-        console.error('Error:', error);
-    });
-}
-
-// Roku Commands
-function sendCommand(key) {
-    if (!rokuIpAddress) {
-        showStatus('Please configure your Roku IP address first', 'error');
-        return;
-    }
-    
-    fetch(`${API_BASE_URL}/api/keypress`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ key: key })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showStatus(`${key} pressed`, 'success');
-        } else {
-            showStatus(data.message || 'Command failed', 'error');
-        }
-    })
-    .catch(error => {
-        showStatus('Failed to send command', 'error');
-        console.error('Error:', error);
-    });
-}
-
-function launchApp(appName, appId) {
-    if (!rokuIpAddress) {
-        showStatus('Please configure your Roku IP address first', 'error');
-        return;
-    }
-    
-    fetch(`${API_BASE_URL}/api/launch`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ app_id: appId, app_name: appName })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showStatus(`Launching ${appName}`, 'success');
-        } else {
-            showStatus(data.message || 'Failed to launch app', 'error');
-        }
-    })
-    .catch(error => {
-        showStatus('Failed to launch app', 'error');
-        console.error('Error:', error);
-    });
-}
-
-function togglePower() {
-    if (!rokuIpAddress) {
-        showStatus('Please configure your Roku IP address first', 'error');
-        return;
-    }
-
-    fetch(`${API_BASE_URL}/api/power`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showStatus('Power toggled', 'success');
-        } else {
-            showStatus(data.message || 'Failed to toggle power', 'error');
-        }
-    })
-    .catch(error => {
-        showStatus('Failed to toggle power', 'error');
-        console.error('Error:', error);
-    });
-}
-
-// PWA Installation
-let deferredPrompt;
-
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-});
-
-// Service Worker Registration
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/static/sw.js')
-            .then(reg => console.log('Service Worker registered'))
-            .catch(err => console.log('Service Worker registration failed'));
-    });
-}
+        voiceResult.textContent = 'Listening..
