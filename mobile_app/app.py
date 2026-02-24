@@ -10,6 +10,7 @@ import logging
 import os
 import json
 import re
+import webbrowser
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 # Set up logging
@@ -183,7 +184,7 @@ def send_roku_command(command_path, method="POST", params=None):
 
 # Routes
 
-@app.route('/')
+@app.route('/ROKU')
 def index():
     """Serve the main mobile interface"""
     return render_template('index.html')
@@ -366,14 +367,19 @@ def internal_error(error):
     """Handle 500 errors"""
     return jsonify({'success': False, 'message': 'Internal server error'}), 500
 
-# Update to use port 443 for HTTPS
+# Update to dynamically open the correct URL with /ROKU path
 if __name__ == '__main__':
     # Path to SSL certificate and key files
     cert_path = os.path.join(os.getcwd(), 'cert.pem')
     key_path = os.path.join(os.getcwd(), 'key.pem')
 
     if os.path.exists(cert_path) and os.path.exists(key_path):
-        app.run(host='localhost', port=443, ssl_context=(cert_path, key_path))
+        url = "https://localhost:5000/ROKU"
+        app.run(host='localhost', port=5000, ssl_context=(cert_path, key_path))
     else:
+        url = "http://localhost:5000/ROKU"
         logger.warning('SSL certificate or key not found. Running without HTTPS.')
-        app.run(host='localhost', port=443)
+        app.run(host='localhost', port=5000)
+
+    # Open the browser to the correct URL
+    webbrowser.open(url)
