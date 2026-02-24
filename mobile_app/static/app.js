@@ -120,4 +120,45 @@ function startVoiceRecognition() {
         const voiceResult = document.getElementById('voice-result');
 
         voiceBtn.classList.add('listening');
-        voiceResult.textContent = 'Listening..
+        voiceResult.textContent = 'Listening...';
+
+        recognition.start();
+
+        // Add timeout for speech recognition (30 seconds)
+        const timeout = setTimeout(() => {
+            recognition.stop();
+        }, 30000);
+
+        recognition.onresult = function(event) {
+            clearTimeout(timeout);
+            const transcript = event.results[0][0].transcript;
+            voiceResult.textContent = `You said: "${transcript}"`;
+            processVoiceCommand(transcript);
+        };
+
+        recognition.onerror = function(event) {
+            clearTimeout(timeout);
+            let errorText = 'Error occurred in recognition';
+
+            // Provide more specific error messages
+            if (event.error === 'no-speech') {
+                errorText = 'No speech detected. Please try again.';
+            } else if (event.error === 'network') {
+                errorText = 'Network error. Check your connection.';
+            } else if (event.error === 'not-allowed') {
+                errorText = 'Microphone permission denied. Check settings.';
+            }
+
+            voiceResult.textContent = errorText;
+            showStatus(errorText, 'error');
+            voiceBtn.classList.remove('listening');
+        };
+
+        recognition.onend = function() {
+            voiceBtn.classList.remove('listening');
+        };
+    } catch (error) {
+        console.error('Speech Recognition Error:', error);
+        showStatus('Failed to initialize voice recognition: ' + error.message, 'error');
+    }
+}
