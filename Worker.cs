@@ -11,16 +11,27 @@ namespace roku_voice_assistant
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
-                // Log only once every minute instead of every second
-                if (_logger.IsEnabled(LogLevel.Information))
+                while (!stoppingToken.IsCancellationRequested)
                 {
-                    _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                }
+                    // Log only once every minute instead of every second
+                    if (_logger.IsEnabled(LogLevel.Information))
+                    {
+                        _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+                    }
 
-                // Delay for 1 minute instead of 1 second
-                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                    // Delay for 1 minute instead of 1 second
+                    await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Worker execution was canceled.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred in the Worker.");
             }
         }
     }

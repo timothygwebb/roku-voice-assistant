@@ -374,12 +374,12 @@ if __name__ == '__main__':
     key_path = os.path.join(os.getcwd(), 'key.pem')
 
     if os.path.exists(cert_path) and os.path.exists(key_path):
-        url = "https://localhost:5000/ROKU"
-        app.run(host='localhost', port=5000, ssl_context=(cert_path, key_path))
+        url = "https://localhost:8080/ROKU"
+        app.run(host='localhost', port=8080, ssl_context=(cert_path, key_path))
     else:
-        url = "http://localhost:5000/ROKU"
+        url = "http://localhost:8080/ROKU"
         logger.warning('SSL certificate or key not found. Running without HTTPS.')
-        app.run(host='localhost', port=5000)
+        app.run(host='localhost', port=8080)
 
     # Open the browser to the correct URL
     webbrowser.open(url)

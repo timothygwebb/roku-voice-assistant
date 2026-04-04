@@ -32,7 +32,7 @@ def flask_server():
 
 def test_flask_status(flask_server):
     # Health check for the Flask API
-    url = "http://127.0.0.1:5000/api/status"
+    url = "http://127.0.0.1:8000/api/status"
     for _ in range(10):
         try:
             r = requests.get(url, timeout=2)
