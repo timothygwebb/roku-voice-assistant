@@ -3,10 +3,17 @@ using System.Runtime.InteropServices;
 
 namespace roku_voice_assistant
 {
-    public class PythonFlaskLauncher(ILogger<PythonFlaskLauncher> logger) : BackgroundService
+    public class PythonFlaskLauncher : BackgroundService
     {
         private Process? _flaskProcess;
-        private readonly ILogger<PythonFlaskLauncher> _logger = logger;
+        private readonly ILogger<PythonFlaskLauncher> _logger;
+        private readonly FlaskProcessMonitor _monitor;
+
+        public PythonFlaskLauncher(ILogger<PythonFlaskLauncher> logger, FlaskProcessMonitor monitor)
+        {
+            _logger = logger;
+            _monitor = monitor;
+        }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -31,6 +38,10 @@ namespace roku_voice_assistant
             }
 
             _flaskProcess = Process.Start(psi);
+            if (_flaskProcess != null)
+            {
+                _monitor.SetProcess(_flaskProcess);
+            }
 
             if (_flaskProcess != null)
             {
@@ -66,10 +77,10 @@ namespace roku_voice_assistant
                 _flaskProcess.BeginErrorReadLine();
             }
 
-            // Open the browser to the remote control page (http://localhost:5000/)
+            // Open the browser to the mobile interface page (http://localhost:8443/ROKU)
             try
             {
-                string url = "http://localhost:5000/";
+                string url = "http://localhost:8443/ROKU";
                 if (_logger.IsEnabled(LogLevel.Information))
                 {
                     _logger.LogInformation("Opening browser to {Url}", url);

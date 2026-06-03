@@ -3,12 +3,13 @@ Flask API server for Roku Voice Assistant mobile interface.
 Provides REST API endpoints for controlling Roku devices from mobile apps.
 """
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect
 from flask_cors import CORS
 import requests
 import logging
 import os
 import json
+import errno
 import re
 import webbrowser
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -52,7 +53,7 @@ app = Flask(__name__,
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 # Configuration
-CONFIG_FILE = 'config.json'
+CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'config.json')
 DEFAULT_ROKU_PORT = 8060
 
 APP_CATALOG = {
@@ -96,26 +97,81 @@ class RokuConfig:
     
     def load_config(self):
         """Load configuration from file"""
-        if os.path.exists(CONFIG_FILE):
+        try:
+            if os.path.exists(CONFIG_FILE):
+                try:
+                    with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                        config = json.load(f)
+                        self.roku_ip = config.get('roku_ip')
+                        logger.info("Loaded config: Roku IP = %s", self.roku_ip)
+                except json.JSONDecodeError:
+                    # Backup corrupted config and create a fresh one
+                    try:
+                        corrupt_backup = CONFIG_FILE + ".corrupt_" + (os.path.getmtime(CONFIG_FILE) and str(int(os.path.getmtime(CONFIG_FILE))))
+                        os.replace(CONFIG_FILE, corrupt_backup)
+                        logger.warning("Config file was corrupted. Backed up to %s and creating a fresh config.", corrupt_backup)
+                    except Exception:
+                        logger.exception("Failed to back up corrupted config file %s", CONFIG_FILE)
+                    # create default
+                    try:
+                        with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                            json.dump({}, f)
+                        self.roku_ip = None
+                        logger.info("Created new default config at %s", CONFIG_FILE)
+                    except Exception:
+                        logger.exception("Failed to create default config at %s", CONFIG_FILE)
+            else:
+                # Create a safe default config file so later saves are more likely to succeed
+                try:
+                    dirpath = os.path.dirname(CONFIG_FILE)
+                    if dirpath and not os.path.exists(dirpath):
+                        os.makedirs(dirpath, exist_ok=True)
+                    with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                        json.dump({}, f)
+                    logger.info("Config file not found. Created default config at %s", CONFIG_FILE)
+                except Exception:
+                    logger.exception("Failed to create default config at %s", CONFIG_FILE)
+
+            # Log file permission info to help diagnose save failures
             try:
-                with open(CONFIG_FILE, 'r') as f:
-                    config = json.load(f)
-                    self.roku_ip = config.get('roku_ip')
-                    logger.info(f"Loaded config: Roku IP = {self.roku_ip}")
-            except Exception as e:
-                logger.error(f"Error loading config: {e}")
+                exists = os.path.exists(CONFIG_FILE)
+                readable = os.access(CONFIG_FILE, os.R_OK)
+                writable = os.access(CONFIG_FILE, os.W_OK)
+                st = os.stat(CONFIG_FILE) if exists else None
+                logger.info("Config path=%s exists=%s readable=%s writable=%s stat=%s", CONFIG_FILE, exists, readable, writable, st)
+            except Exception:
+                logger.debug("Could not stat or access config file %s", CONFIG_FILE)
+        except Exception:
+            logger.exception("Error loading config from %s", CONFIG_FILE)
     
     def save_config(self, roku_ip):
-        """Save configuration to file"""
+        """Save configuration to file. Returns (success, message)."""
         self.roku_ip = roku_ip
         try:
-            with open(CONFIG_FILE, 'w') as f:
-                json.dump({'roku_ip': roku_ip}, f)
-            logger.info(f"Saved config: Roku IP = {roku_ip}")
-            return True
+            # Ensure directory exists
+            dirpath = os.path.dirname(CONFIG_FILE)
+            if dirpath and not os.path.exists(dirpath):
+                os.makedirs(dirpath, exist_ok=True)
+
+            with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                json.dump({'roku_ip': roku_ip}, f, indent=2)
+            logger.info("Saved config: Roku IP = %s (to %s)", roku_ip, CONFIG_FILE)
+            return True, "Configuration saved"
         except Exception as e:
-            logger.error(f"Error saving config: {e}")
-            return False
+            # Map common errors to friendlier messages
+            logger.exception("Error saving config to %s", CONFIG_FILE)
+            if isinstance(e, PermissionError):
+                return False, f"Permission denied writing to config file {CONFIG_FILE}. Check file permissions or run as a user that can write to this path."
+            if isinstance(e, OSError):
+                if getattr(e, 'errno', None) == errno.ENOSPC:
+                    return False, f"No space left on device when writing {CONFIG_FILE}. Free disk space and try again."
+                if getattr(e, 'errno', None) == errno.EACCES:
+                    return False, f"Access denied when writing {CONFIG_FILE}. Check file permissions."
+            # Generic inspection for locked file (Windows common message)
+            msg = str(e)
+            if 'used by another process' in msg or 'being used by another process' in msg:
+                return False, f"Config file appears locked by another process: {msg}"
+            return False, msg
     
     def get_roku_url(self, path):
         """Get full Roku URL for a given path"""
@@ -193,7 +249,21 @@ def index():
 def config():
     """Get or set Roku configuration"""
     if request.method == 'POST':
-        data = request.get_json()
+        # Try to get JSON body, allow silent failure and fallback to raw body parsing
+        data = request.get_json(silent=True)
+        if not data:
+            try:
+                raw = request.data or b''
+                if raw:
+                    data = json.loads(raw.decode('utf-8'))
+                else:
+                    data = None
+            except Exception:
+                data = None
+
+        if not data:
+            return jsonify({'success': False, 'message': 'Invalid or missing JSON body'}), 400
+
         roku_ip = data.get('roku_ip')
         
         if not roku_ip:
@@ -204,10 +274,11 @@ def config():
         if not ip_pattern.match(roku_ip):
             return jsonify({'success': False, 'message': 'Invalid IP address format'}), 400
         
-        if roku_config.save_config(roku_ip):
-            return jsonify({'success': True, 'message': 'Configuration saved'})
+        success, msg = roku_config.save_config(roku_ip)
+        if success:
+            return jsonify({'success': True, 'message': msg})
         else:
-            return jsonify({'success': False, 'message': 'Failed to save configuration'}), 500
+            return jsonify({'success': False, 'message': 'Failed to save configuration', 'error': msg}), 500
     
     else:  # GET
         return jsonify({
@@ -367,19 +438,33 @@ def internal_error(error):
     """Handle 500 errors"""
     return jsonify({'success': False, 'message': 'Internal server error'}), 500
 
+@app.route('/')
+def root():
+    """Redirect root to the mobile interface path"""
+    return redirect('/ROKU')
+
+
 # Update to dynamically open the correct URL with /ROKU path
 if __name__ == '__main__':
     # Path to SSL certificate and key files
     cert_path = os.path.join(os.getcwd(), 'cert.pem')
     key_path = os.path.join(os.getcwd(), 'key.pem')
 
-    if os.path.exists(cert_path) and os.path.exists(key_path):
-        url = "https://localhost:8080/ROKU"
-        app.run(host='localhost', port=8080, ssl_context=(cert_path, key_path))
-    else:
-        url = "http://localhost:8080/ROKU"
-        logger.warning('SSL certificate or key not found. Running without HTTPS.')
-        app.run(host='localhost', port=8080)
+    port = 8443
+    use_ssl = os.path.exists(cert_path) and os.path.exists(key_path)
+    scheme = 'https' if use_ssl else 'http'
+    url = f"{scheme}://localhost:{port}/ROKU"
 
-    # Open the browser to the correct URL
-    webbrowser.open(url)
+    if not use_ssl:
+        logger.warning('SSL certificate or key not found. Running without HTTPS.')
+
+    # Open the browser to the correct URL before starting the server
+    try:
+        webbrowser.open(url)
+    except Exception as e:
+        logger.warning('Could not open browser: %s', e)
+
+    if use_ssl:
+        app.run(host='localhost', port=port, ssl_context=(cert_path, key_path))
+    else:
+        app.run(host='localhost', port=port)

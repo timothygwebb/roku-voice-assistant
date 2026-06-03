@@ -581,7 +581,7 @@
         },
         "Port":{
           "shape":"String",
-          "documentation":"<p>The port that your application listens to in the container.</p> <p>Default: <code>8080</code> </p>"
+          "documentation":"<p>The port that your application listens to in the container.</p> <p>Default: <code>8443</code> </p>"
         },
         "RuntimeEnvironmentVariables":{
           "shape":"RuntimeEnvironmentVariables",
@@ -1144,7 +1144,7 @@
         },
         "Port":{
           "shape":"String",
-          "documentation":"<p>The port that your application listens to in the container.</p> <p>Default: <code>8080</code> </p>"
+          "documentation":"<p>The port that your application listens to in the container.</p> <p>Default: <code>8443</code> </p>"
         }
       },
       "documentation":"<p>Describes the configuration that AWS App Runner uses to run an App Runner service using an image pulled from a source image repository.</p>"

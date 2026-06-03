@@ -290,7 +290,7 @@ class ProxySchemeUnknown(AssertionError, URLSchemeUnknown):
 
     def __init__(self, scheme):
         # 'localhost' is here because our URL parser parses
-        # localhost:8080 -> scheme=localhost, remove if we fix this.
+        # localhost:8443 -> scheme=localhost, remove if we fix this.
         if scheme == "localhost":
             scheme = None
         if scheme is None:
