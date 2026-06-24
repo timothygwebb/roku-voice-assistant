@@ -1,5 +1,5 @@
 // Update API_BASE_URL to use https://localhost
-const API_BASE_URL = 'https://localhost';
+const API_BASE_URL = 'https://localhost:8443';
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
