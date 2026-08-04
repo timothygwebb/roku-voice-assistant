@@ -3,9 +3,10 @@ import subprocess
 import shutil
 
 # Configuration
-CERTBOT_PATH = r"C:\Users\timot\source\repos\roku-voice-assistant\certbot-5.3.1"
-PROJECT_CERT_DIR = r"C:\Users\timot\source\repos\roku-voice-assistant\mobile_app"
-DOMAIN = "yourdomain.com"  # Replace with your actual domain name
+# Set these via environment variables or update the defaults below before running.
+CERTBOT_PATH = os.environ.get("CERTBOT_PATH", r"C:\path\to\certbot")
+PROJECT_CERT_DIR = os.environ.get("PROJECT_CERT_DIR", r"C:\path\to\roku-voice-assistant\mobile_app")
+DOMAIN = os.environ.get("CERTBOT_DOMAIN", "yourdomain.com")  # Replace with your actual domain name
 CERTBOT_LIVE_DIR = rf"C:\Certbot\live\{DOMAIN}"
 
 def issue_certificates():

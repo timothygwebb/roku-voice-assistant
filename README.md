@@ -81,8 +81,17 @@ pip install -r requirements.txt
    python app.py
    ```
 
+   The server runs on port `8443`. If `cert.pem` and `key.pem` are present in `mobile_app/`, it uses HTTPS (required for voice recognition on iOS). To generate a self-signed certificate for development:
+
+   ```bash
+   cd mobile_app
+   python generate_ssl_certificates.py
+   ```
+
+   > **Security note**: `config.json`, SSL certificate files (`cert.pem`, `key.pem`, `localhost.pfx`) are excluded from version control. Never commit files containing your local network IP addresses or private keys.
+
 3. **Access from iPhone**:
-   - Open Safari and go to `http://[YOUR_SERVER_IP]:5000`
+   - Open Safari and go to `https://[YOUR_SERVER_IP]:8443`
    - Tap Share → "Add to Home Screen"
    - Open the app and configure your Roku IP address
 
@@ -102,10 +111,11 @@ pip install -r requirements.txt
    pip install -r requirements.txt
    ```
 
-4. Configure your Roku device IP address in `lambda_function.py`:
-   - Open `lambda_function.py`
-   - Replace `YOUR_ROKU_IP_ADDRESS` with your Roku's IP address
+4. Configure your Roku device IP address:
+   - In production, set `ROKU_IP_ADDRESS` as an AWS Lambda environment variable (recommended)
+   - For local testing, replace `YOUR_ROKU_IP_ADDRESS` in `lambda_function.py`
    - Find your Roku IP: Settings → Network → About
+   - **Never commit a real IP address to version control**
 
 5. Configure your AWS credentials.
 6. Create a deployment package with all dependencies.
