@@ -88,7 +88,7 @@ pip install -r requirements.txt
    python generate_ssl_certificates.py
    ```
 
-   > **Security note**: `config.json`, SSL certificate files (`cert.pem`, `key.pem`, `localhost.pfx`) are excluded from version control. Never commit files containing your local network IP addresses or private keys.
+> **Security note**: `mobile_app/config.json` and SSL certificate files (`cert.pem`, `key.pem`, `localhost.pfx`) should not be committed (they are ignored by `.gitignore`). Never commit files containing your local network IP addresses or private keys.
 
 3. **Access from iPhone**:
    - Open Safari and go to `https://[YOUR_SERVER_IP]:8443`
