@@ -1,16 +1,13 @@
-// Function to request microphone access
 async function requestMicrophoneAccess() {
     try {
-        // Request microphone access
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        await navigator.mediaDevices.getUserMedia({ audio: true });
         console.log("Microphone access granted");
-        // Use the stream for audio processing
+        showStatus("Microphone enabled");
     } catch (err) {
         console.error("Microphone access denied", err);
+        showStatus("Microphone access denied", true);
     }
 }
 
-// Call this function when the user interacts with the app
-document.getElementById("request-mic-access").addEventListener("click", () => {
-    requestMicrophoneAccess();
-});});});
+document.getElementById("request-mic-access")
+    .addEventListener("click", requestMicrophoneAccess);

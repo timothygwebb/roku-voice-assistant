@@ -2,16 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <!-- Mobile Web App Capability -->
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Roku Assistant">
+
     <title>Roku Voice Assistant</title>
+
+    <!-- Icons -->
     <link rel="apple-touch-icon" href="/static/icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/static/icon-512.png">
+
+    <!-- Manifest -->
     <link rel="manifest" href="/static/manifest.json">
+
+    <!-- Styles -->
     <link rel="stylesheet" href="/static/styles.css">
-    <script src="static/js/mic-access.js" defer></script>
+
+    <!-- Microphone Access Script (FIXED PATH) -->
+    <script src="/static/js/mic-access.js" defer></script>
 </head>
+
 <body>
     <div class="container">
         <header>
@@ -111,6 +127,7 @@
         </section>
     </div>
 
+    <!-- Main App Logic -->
     <script src="/static/app.js"></script>
 </body>
 </html>

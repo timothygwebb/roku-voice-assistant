@@ -1,163 +1,115 @@
-// Update API_BASE_URL to use https://localhost
 const API_BASE_URL = 'https://localhost:8443';
+let rokuIpAddress = localStorage.getItem('rokuIpAddress') || null;
 
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', () => {
     loadConfig();
     checkBrowserSupport();
 });
 
-// Configuration Management
+// Load saved IP
 function loadConfig() {
     const ipInput = document.getElementById('roku-ip');
-    if (rokuIpAddress) {
-        ipInput.value = rokuIpAddress;
-    }
+    if (rokuIpAddress) ipInput.value = rokuIpAddress;
 }
 
+// Save IP + send to backend
 function saveConfig() {
     const ipInput = document.getElementById('roku-ip');
     const ip = ipInput.value.trim();
-    
-    if (!ip) {
-        showStatus('Please enter a valid IP address', 'error');
-        return;
-    }
-    
-    // Validate IP format
+
+    if (!ip) return showStatus('Please enter a valid IP address', true);
+
     const ipRegex = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/;
-    if (!ipRegex.test(ip)) {
-        showStatus('Invalid IP address format', 'error');
-        return;
-    }
-    
+    if (!ipRegex.test(ip)) return showStatus('Invalid IP address format', true);
+
     rokuIpAddress = ip;
     localStorage.setItem('rokuIpAddress', ip);
-    
-    // Send to backend
+
     fetch(`${API_BASE_URL}/api/config`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ roku_ip: ip })
     })
-    .then(response => response.json())
-    .then(data => {
-        showStatus('Configuration saved successfully', 'success');
-    })
-    .catch(error => {
-        showStatus('Failed to save configuration', 'error');
-        console.error('Error:', error);
+    .then(res => res.json())
+    .then(() => showStatus('Configuration saved'))
+    .catch(err => {
+        console.error(err);
+        showStatus('Failed to save configuration', true);
     });
 }
 
-// Status Messages
-function showStatus(message, type) {
-    const statusEl = document.getElementById('status');
-    statusEl.textContent = message;
-    statusEl.className = `status ${type}`;
-    statusEl.classList.remove('hidden');
-    
-    setTimeout(() => {
-        statusEl.classList.add('hidden');
-    }, 3000);
+// Status display
+function showStatus(message, isError = false) {
+    const status = document.getElementById("status");
+    status.textContent = message;
+    status.classList.remove("hidden");
+    status.classList.toggle("error", isError);
+    setTimeout(() => status.classList.add("hidden"), 2000);
 }
 
-// Voice Recognition
+// Voice recognition
 let recognition = null;
-
-function isIOS() {
-    return /iPad|iPhone|iPod/.test(navigator.userAgent);
-}
 
 function checkBrowserSupport() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const isSupported = SpeechRecognition !== undefined;
-
-    if (!isSupported) {
-        showStatus('Voice recognition is not supported in this browser. Please use a supported browser like Chrome, Edge, or Safari.', 'error');
+    if (!SpeechRecognition) {
+        showStatus('Voice recognition not supported', true);
         return false;
     }
-
-    // Check if microphone permissions are granted
-    navigator.permissions.query({ name: 'microphone' }).then(permissionStatus => {
-        if (permissionStatus.state === 'denied') {
-            showStatus('Microphone access is denied. Please enable it in your browser settings.', 'error');
-        } else if (permissionStatus.state === 'prompt') {
-            showStatus('Please allow microphone access to use voice recognition.', 'error');
-        }
-    }).catch(error => {
-        console.error('Error checking microphone permissions:', error);
-        showStatus('Unable to check microphone permissions. Please ensure your browser supports microphone access.', 'error');
-    });
-
-    return isSupported;
+    return true;
 }
 
 function startVoiceRecognition() {
-    if (!rokuIpAddress) {
-        showStatus('Please configure your Roku IP address first', 'error');
-        return;
-    }
+    if (!rokuIpAddress) return showStatus('Set Roku IP first', true);
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return showStatus('Voice recognition not supported', true);
 
-    if (!SpeechRecognition) {
-        showStatus('Voice recognition is not supported on this device. Please use a supported browser like Chrome, Edge, or Safari.', 'error');
-        return;
-    }
+    recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
 
-    try {
-        recognition = new SpeechRecognition();
-        recognition.lang = 'en-US';
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
-        recognition.continuous = false;
+    const voiceBtn = document.getElementById('voice-btn');
+    const voiceResult = document.getElementById('voice-result');
 
-        const voiceBtn = document.getElementById('voice-btn');
-        const voiceResult = document.getElementById('voice-result');
+    voiceBtn.classList.add('listening');
+    voiceResult.textContent = 'Listening...';
 
-        voiceBtn.classList.add('listening');
-        voiceResult.textContent = 'Listening...';
+    recognition.start();
 
-        recognition.start();
+    recognition.onresult = event => {
+        const transcript = event.results[0][0].transcript;
+        voiceResult.textContent = `You said: "${transcript}"`;
+        processVoiceCommand(transcript);
+    };
 
-        // Add timeout for speech recognition (30 seconds)
-        const timeout = setTimeout(() => {
-            recognition.stop();
-        }, 30000);
+    recognition.onerror = event => {
+        showStatus(event.error || 'Voice error', true);
+        voiceBtn.classList.remove('listening');
+    };
 
-        recognition.onresult = function(event) {
-            clearTimeout(timeout);
-            const transcript = event.results[0][0].transcript;
-            voiceResult.textContent = `You said: "${transcript}"`;
-            processVoiceCommand(transcript);
-        };
+    recognition.onend = () => voiceBtn.classList.remove('listening');
+}
 
-        recognition.onerror = function(event) {
-            clearTimeout(timeout);
-            let errorText = 'Error occurred in recognition';
+// FIXED: Correct Roku endpoint
+function sendCommand(command) {
+    fetch(`${API_BASE_URL}/api/roku`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command })
+    })
+    .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+    })
+    .then(() => showStatus(`Sent: ${command}`))
+    .catch(err => {
+        console.error(err);
+        showStatus(`Error sending ${command}`, true);
+    });
+}
 
-            // Provide more specific error messages
-            if (event.error === 'no-speech') {
-                errorText = 'No speech detected. Please try again.';
-            } else if (event.error === 'network') {
-                errorText = 'Network error. Check your connection.';
-            } else if (event.error === 'not-allowed') {
-                errorText = 'Microphone permission denied. Check settings.';
-            }
-
-            voiceResult.textContent = errorText;
-            showStatus(errorText, 'error');
-            voiceBtn.classList.remove('listening');
-        };
-
-        recognition.onend = function() {
-            voiceBtn.classList.remove('listening');
-        };
-    } catch (error) {
-        console.error('Speech Recognition Error:', error);
-        showStatus('Failed to initialize voice recognition: ' + error.message, 'error');
-    }
+// Launch Roku app
+function launchApp(name, appId) {
+    sendCommand(`Launch:${appId}`);
 }
