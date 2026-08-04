@@ -210,12 +210,12 @@ This creates `cert.pem`, `key.pem`, and `localhost.pfx`. These files are exclude
 
 Use `automate_certbot_setup.py` to automate certificate issuance. Configure the required paths via environment variables before running:
 
-```bash
-export CERTBOT_PATH="C:\path\to\certbot"
-export PROJECT_CERT_DIR="C:\path\to\roku-voice-assistant\mobile_app"
-export CERTBOT_DOMAIN="yourdomain.com"
+~~~powershell
+$env:CERTBOT_PATH="C:\path\to\certbot"
+$env:PROJECT_CERT_DIR="C:\path\to\roku-voice-assistant\mobile_app"
+$env:CERTBOT_DOMAIN="yourdomain.com"
 python automate_certbot_setup.py
-```
+~~~
 
 ## Production Deployment
 
