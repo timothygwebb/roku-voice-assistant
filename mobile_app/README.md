@@ -53,9 +53,9 @@ The server will start on `http://localhost:8443` by default (HTTPS if SSL certif
 
 1. **Access the App**:
    - Open Safari on your iPhone
-   - Navigate to `https://[YOUR_SERVER_IP]:8443`
+   - Navigate to `https://[YOUR_SERVER_IP]:8443` (requires the server to listen on your LAN interface, not just `localhost`)
    - Replace `[YOUR_SERVER_IP]` with your computer's IP address
-
+   - **Note**: `app.py` currently binds to `localhost`; change it to `0.0.0.0` (or use a reverse proxy) for phone access
 2. **Install as PWA**:
    - Tap the Share button (square with arrow)
    - Scroll down and tap "Add to Home Screen"
