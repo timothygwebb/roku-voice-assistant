@@ -61,8 +61,8 @@ def setup_renewal_task():
     print("Setting up scheduled task for certificate renewal...")
     try:
         task_name = "CertbotRenewal"
-        command = f"schtasks /create /tn {task_name} /tr \"{CERTBOT_EXE} renew --quiet\" /sc monthly /f"
-        subprocess.run(command, shell=True, check=True)
+        task_command = f'"{CERTBOT_EXE}" renew --quiet'
+        subprocess.run(["schtasks", "/create", "/tn", task_name, "/tr", task_command, "/sc", "monthly", "/f"], check=True)
         print("Scheduled task created successfully.")
     except subprocess.CalledProcessError as e:
         print(f"Error creating scheduled task: {e}")
