@@ -112,7 +112,7 @@ pip install -r requirements.txt
    ```
 
 4. Configure your Roku device IP address:
-   - In production, set `ROKU_IP_ADDRESS` as an AWS Lambda environment variable (recommended)
+   - In production, set `ROKU_IP_ADDRESS` in `lambda_function.py` (or modify the code to read it from a Lambda environment variable)
    - For local testing, replace `YOUR_ROKU_IP_ADDRESS` in `lambda_function.py`
    - Find your Roku IP: Settings → Network → About
    - **Never commit a real IP address to version control**
