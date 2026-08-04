@@ -45,7 +45,7 @@ cd mobile_app
 python app.py
 ```
 
-The server will start on `http://0.0.0.0:5000` by default.
+The server will start on `http://localhost:8443` by default (HTTPS if SSL certificates are present, otherwise HTTP). See the [SSL Setup](#ssl-setup) section below for enabling HTTPS, which is required for voice recognition and PWA features on iOS.
 
 ### Mobile Device Setup
 
@@ -53,9 +53,9 @@ The server will start on `http://0.0.0.0:5000` by default.
 
 1. **Access the App**:
    - Open Safari on your iPhone
-   - Navigate to `http://[YOUR_SERVER_IP]:5000`
+   - Navigate to `https://[YOUR_SERVER_IP]:8443` (requires the server to listen on your LAN interface, not just `localhost`)
    - Replace `[YOUR_SERVER_IP]` with your computer's IP address
-
+   - **Note**: `app.py` currently binds to `localhost`; change it to `0.0.0.0` (or use a reverse proxy) for phone access
 2. **Install as PWA**:
    - Tap the Share button (square with arrow)
    - Scroll down and tap "Add to Home Screen"
@@ -75,7 +75,7 @@ The server will start on `http://0.0.0.0:5000` by default.
 #### Android Setup
 
 1. Open Chrome browser
-2. Navigate to `http://[YOUR_SERVER_IP]:5000`
+2. Navigate to `https://[YOUR_SERVER_IP]:8443`
 3. Tap the menu (three dots) and select "Add to Home Screen"
 4. Follow the same configuration steps as iOS
 
@@ -191,18 +191,42 @@ To find more app IDs, visit: `http://[ROKU_IP]:8060/query/apps`
 2. Check network connection to server
 3. Verify Roku device is powered on and responsive
 
+## SSL Setup
+
+HTTPS is required for voice recognition and PWA installation on mobile browsers. The server automatically uses HTTPS on port 8443 when SSL certificate files (`cert.pem` and `key.pem`) are present in the `mobile_app/` directory.
+
+### Generate a Self-Signed Certificate (Development)
+
+```bash
+cd mobile_app
+python generate_ssl_certificates.py
+```
+
+This creates `cert.pem`, `key.pem`, and `localhost.pfx`. These files are excluded from version control (see `.gitignore`).
+
+> **Note**: Self-signed certificates require you to accept a browser security warning the first time you access the app. For production, use a trusted certificate (e.g., Let's Encrypt).
+
+### Production Certificate (Let's Encrypt)
+
+Use `automate_certbot_setup.py` to automate certificate issuance. Configure the required paths via environment variables before running:
+
+~~~powershell
+$env:CERTBOT_PATH="C:\path\to\certbot"
+$env:PROJECT_CERT_DIR="C:\path\to\roku-voice-assistant\mobile_app"
+$env:CERTBOT_DOMAIN="yourdomain.com"
+python automate_certbot_setup.py
+~~~
+
 ## Production Deployment
 
 For production use, consider:
 
-1. **Use HTTPS**: Required for voice recognition and PWA features
-   - Set up SSL certificate (Let's Encrypt recommended)
-   - Configure reverse proxy (nginx/Apache)
+1. **Use HTTPS**: Required for voice recognition and PWA features (see [SSL Setup](#ssl-setup) above)
 
 2. **Use Production Server**: Replace Flask development server
 
    ```bash
-   gunicorn -w 4 -b 0.0.0.0:5000 app:app
+   gunicorn -w 4 -b 0.0.0.0:8443 app:app
    ```
 
 3. **Network Configuration**:

@@ -69,3 +69,7 @@ node_modules/
 /mobile_app/acert.pem
 /mobile_app/cert.pem
 /mobile_app/key.pem
+/mobile_app/localhost.pfx
+
+# Runtime configuration (may contain local IP addresses)
+/config.json

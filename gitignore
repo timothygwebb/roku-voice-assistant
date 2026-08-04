@@ -7,3 +7,7 @@ __pycache__/
 .build/
 dist/
 .env
+config.json
+mobile_app/localhost.pfx
+mobile_app/cert.pem
+mobile_app/key.pem
