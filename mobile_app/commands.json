@@ -1,0 +1,58 @@
+{
+  "commands": [
+    {
+      "id": "up",
+      "label": "Up",
+      "rokuKey": "Up",
+      "voice": [ "up", "go up", "scroll up" ]
+    },
+    {
+      "id": "down",
+      "label": "Down",
+      "rokuKey": "Down",
+      "voice": [ "down", "go down", "scroll down" ]
+    },
+    {
+      "id": "left",
+      "label": "Left",
+      "rokuKey": "Left",
+      "voice": [ "left", "go left" ]
+    },
+    {
+      "id": "right",
+      "label": "Right",
+      "rokuKey": "Right",
+      "voice": [ "right", "go right" ]
+    },
+    {
+      "id": "ok",
+      "label": "OK",
+      "rokuKey": "Select",
+      "voice": [ "ok", "okay", "select", "confirm" ]
+    },
+    {
+      "id": "back",
+      "label": "Back",
+      "rokuKey": "Back",
+      "voice": [ "back", "go back" ]
+    },
+    {
+      "id": "home",
+      "label": "Home",
+      "rokuKey": "Home",
+      "voice": [ "home", "go home", "main menu" ]
+    },
+    {
+      "id": "settings",
+      "label": "Settings",
+      "smart": "go_to_settings",
+      "voice": [ "settings", "go to settings", "open settings" ]
+    },
+    {
+      "id": "captions_on",
+      "label": "Captions On",
+      "smart": "captions_on",
+      "voice": [ "turn captions on", "enable subtitles", "turn on subtitles" ]
+    }
+  ]
+}
