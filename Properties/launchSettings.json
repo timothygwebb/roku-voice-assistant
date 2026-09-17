@@ -5,7 +5,12 @@
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
       },
-      "dotnetRunMessages": true
+      "dotnetRunMessages": true,
+      "debugEngines": "managed,native",
+      "sqlDebugging": true,
+      "jsWebView2Debugging": true,
+      "remoteDebugEnabled": false,
+      "hotReloadEnabled": false
     },
     "WSL": {
       "commandName": "WSL2",

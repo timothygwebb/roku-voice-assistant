@@ -11,7 +11,4 @@ async function requestMicrophoneAccess() {
     }
 }
 
-// Call this function when the user interacts with the app
-document.getElementById("request-mic-access").addEventListener("click", () => {
-    requestMicrophoneAccess();
-   });
+showStatus("Please enable microphone access in browser settings.");
