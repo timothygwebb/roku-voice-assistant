@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://localhost:8443';
+const API_BASE_URL = 'http://localhost:8443';
 let rokuIpAddress = localStorage.getItem('rokuIpAddress') || null;
 
 document.addEventListener('DOMContentLoaded', () => {
