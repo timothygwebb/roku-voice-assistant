@@ -7,8 +7,8 @@
       },
       "dotnetRunMessages": true,
       "debugEngines": "managed,native",
-      "sqlDebugging": true,
-      "jsWebView2Debugging": true,
+      "sqlDebugging": false,
+      "jsWebView2Debugging": false,
       "remoteDebugEnabled": false,
       "hotReloadEnabled": false
     },
