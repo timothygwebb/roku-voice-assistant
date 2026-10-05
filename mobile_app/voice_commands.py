@@ -5,7 +5,7 @@ import os
 import requests
 from typing import Callable, Dict, Any, List
 
-ROKU_IP = "192.168.68.50"  # TODO: your Roku IP
+ROKU_IP = os.environ.get("ROKU_IP", "192.168.68.50")  # TODO: set ROKU_IP env var to your Roku device IP
 ROKU_PORT = 8060
 
 CommandFn = Callable[[], None]
