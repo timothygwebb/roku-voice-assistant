@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8443';
+const API_BASE_URL = window.location.origin;
 let rokuIpAddress = localStorage.getItem('rokuIpAddress') || null;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -89,6 +89,29 @@ function startVoiceRecognition() {
     };
 
     recognition.onend = () => voiceBtn.classList.remove('listening');
+}
+
+// Send a voice transcript to the backend for processing.
+function processVoiceCommand(transcript) {
+    fetch(`${API_BASE_URL}/api/voice`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: transcript })
+    })
+    .then(res => res.json())
+    .then(data => showStatus(data.message || 'Command sent'))
+    .catch(err => {
+        console.error(err);
+        showStatus('Failed to process voice command', true);
+    });
+}
+
+// Register the service worker. Only secure contexts (HTTPS or
+// localhost) support workers, so this is a no-op on plain HTTP LAN.
+if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(err => console.error('Service worker registration failed:', err));
+    });
 }
 
 // FIXED: Correct Roku endpoint

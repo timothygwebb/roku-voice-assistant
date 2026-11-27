@@ -91,7 +91,7 @@ pip install -r requirements.txt
 > **Security note**: `mobile_app/config.json` and SSL certificate files (`cert.pem`, `key.pem`, `localhost.pfx`) should not be committed (they are ignored by `.gitignore`). Never commit files containing your local network IP addresses or private keys.
 
 3. **Access from iPhone**:
-   - Open Safari and go to `https://[YOUR_SERVER_IP]:8443`
+   - Open Safari and go to `http://[YOUR_PC_LAN_IP]:8443` for buttons and remote control, or `https://[YOUR_PC_LAN_IP]:8443` for voice and microphone too (requires the certificate installed and trusted on the iPhone; see mobile_app/README.md)
    - Tap Share → "Add to Home Screen"
    - Open the app and configure your Roku IP address
 

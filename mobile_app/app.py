@@ -14,7 +14,7 @@ import webbrowser
 from typing import Dict, List, Optional, Tuple
 
 import requests
-from flask import Flask, jsonify, redirect, render_template, request, Response
+from flask import Flask, jsonify, redirect, render_template, request, Response, send_from_directory
 from flask_cors import CORS
 from requests import Response as RequestsResponse
 from typing import TypedDict
@@ -278,6 +278,20 @@ def send_roku_command(
 def index() -> Response:
     """Serve the main mobile interface."""
     return render_template("index.html")
+@app.route("/sw.js")
+def service_worker() -> Response:
+    """Serve the service worker from the site root.
+
+    A worker served from /static/ can only control /static/*, so it
+    must be served from the root scope to control /ROKU. Flask's
+    static route cannot do that, hence this explicit route.
+    """
+    response = send_from_directory(
+        app.static_folder, "sw.js", mimetype="application/javascript"
+    )
+    response.headers["Service-Worker-Allowed"] = "/"
+    response.headers["Cache-Control"] = "no-cache"
+    return response
 
 
 @app.route("/api/config", methods=["GET", "POST"])
@@ -509,10 +523,15 @@ def root() -> Response:
 
 if __name__ == "__main__":
     _start_parent_watcher()
-    cert_path = os.path.join(os.getcwd(), "cert.pem")
-    key_path = os.path.join(os.getcwd(), "key.pem")
+    # Certificates live next to this file, not in the process working
+    # directory (the C# launcher and pytest run from the repo root).
+    cert_path = os.path.join(os.path.dirname(__file__), "cert.pem")
+    key_path = os.path.join(os.path.dirname(__file__), "key.pem")
 
-    port: int = 8443
+    # Host/port are overridable: the iPhone flow needs the LAN interface,
+    # not localhost. Defaults serve on all interfaces, port 8443.
+    host: str = os.environ.get("FLASK_HOST", "0.0.0.0")
+    port: int = int(os.environ.get("FLASK_PORT", "8443"))
     use_ssl: bool = os.path.exists(cert_path) and os.path.exists(key_path)
     scheme: str = "https" if use_ssl else "http"
     url: str = f"{scheme}://localhost:{port}/ROKU"
@@ -526,6 +545,6 @@ if __name__ == "__main__":
         logger.warning("Could not open browser: %s", e)
 
     if use_ssl:
-        app.run(host="localhost", port=port, ssl_context=(cert_path, key_path))
+        app.run(host=host, port=port, ssl_context=(cert_path, key_path))
     else:
-        app.run(host="localhost", port=port)
+        app.run(host=host, port=port)
