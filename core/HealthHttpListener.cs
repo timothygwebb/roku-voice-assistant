@@ -29,6 +29,16 @@ namespace roku_voice_assistant
                 return;
             }
 
+            // GetContextAsync() takes no cancellation token, so without
+            // this the loop below blocks forever and graceful shutdown
+            // (Ctrl+C / SIGTERM) hangs even though the host asked us to
+            // stop. Stopping the listener aborts the pending GetContext
+            // call, the loop sees the cancelled token and exits.
+            using var _ = stoppingToken.Register(() =>
+            {
+                try { _listener.Stop(); } catch { }
+            });
+
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
@@ -62,8 +72,8 @@ namespace roku_voice_assistant
                 }
             }
 
-            _listener.Stop();
-            _listener.Close();
+            try { _listener.Stop(); } catch { }
+            try { _listener.Close(); } catch { }
         }
     }
 }

@@ -32,6 +32,8 @@ namespace roku_voice_assistant
                 WorkingDirectory = Path.GetDirectoryName(scriptPath) ?? "."
             };
 
+            // Tell Flask which process started it, so its parent watcher             // can exit when this process dies however it dies.             psi.Environment["ROKU_PARENT_PID"] = Environment.ProcessId.ToString();
+
             if (_logger.IsEnabled(LogLevel.Information))
             {
                 _logger.LogInformation("Starting Flask backend: {PythonExe} {Arguments}", pythonExe, psi.Arguments);
@@ -41,6 +43,12 @@ namespace roku_voice_assistant
             if (_flaskProcess != null)
             {
                 _monitor.SetProcess(_flaskProcess);
+                // OS-level guarantee: Windows kills Flask when this
+                // process exits, even on a hard kill such as Stop
+                // Debugging, where the finally block below never runs.
+                // If assignment fails, Flask falls back to watching
+                // ROKU_PARENT_PID in app.py.
+                ChildProcessJob.TryAssign(_flaskProcess, _logger);
             }
 
             if (_flaskProcess != null)

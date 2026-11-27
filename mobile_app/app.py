@@ -9,6 +9,7 @@ import json
 import logging
 import os
 import re
+import threading
 import webbrowser
 from typing import Dict, List, Optional, Tuple
 
@@ -38,6 +39,61 @@ class SuppressSSLHandshakeFilter(logging.Filter):
 
 werkzeug_logger = logging.getLogger("werkzeug")
 werkzeug_logger.addFilter(SuppressSSLHandshakeFilter())
+
+def _start_parent_watcher():
+    """Exit Flask when the parent (dotnet host) process dies.
+
+    The dotnet launcher kills Flask on graceful shutdown, but a hard
+    kill of the dotnet process (for example Stop Debugging in Visual
+    Studio) never runs that cleanup, leaving Flask orphaned on port
+    8443. This thread watches the parent PID passed in
+    ROKU_PARENT_PID and exits the process when the parent is gone.
+    No-op when the variable is unset (for example running app.py
+    directly, or under pytest/gunicorn).
+    """
+    parent_pid_raw = os.environ.get("ROKU_PARENT_PID")
+    if not parent_pid_raw:
+        return
+    try:
+        parent_pid = int(parent_pid_raw)
+    except ValueError:
+        logger.warning("Ignoring invalid ROKU_PARENT_PID=%r", parent_pid_raw)
+        return
+    if parent_pid <= 0:
+        return
+
+    def _watch():
+        try:
+            if os.name == "nt":
+                import ctypes
+
+                kernel32 = ctypes.windll.kernel32
+                SYNCHRONIZE = 0x00100000
+                handle = kernel32.OpenProcess(SYNCHRONIZE, False, parent_pid)
+                if not handle:
+                    logger.warning("Parent process %s already gone, shutting down Flask", parent_pid)
+                    os._exit(0)
+                # Blocks until the parent process exits, then returns.
+                kernel32.WaitForSingleObject(handle, 0xFFFFFFFF)
+                logger.warning("Parent process %s exited, shutting down Flask", parent_pid)
+                os._exit(0)
+            else:
+                import time
+
+                while True:
+                    try:
+                        os.kill(parent_pid, 0)
+                    except ProcessLookupError:
+                        logger.warning("Parent process %s exited, shutting down Flask", parent_pid)
+                        os._exit(0)
+                    except PermissionError:
+                        pass
+                    time.sleep(2)
+        except Exception:
+            logger.exception("Parent watcher failed, Flask will keep running")
+
+    threading.Thread(target=_watch, name="parent-watcher", daemon=True).start()
+    logger.info("Parent watcher started for PID %s", parent_pid)
 
 # ---------------------------------------------------------
 # Flask App Setup
@@ -452,6 +508,7 @@ def root() -> Response:
 
 
 if __name__ == "__main__":
+    _start_parent_watcher()
     cert_path = os.path.join(os.getcwd(), "cert.pem")
     key_path = os.path.join(os.getcwd(), "key.pem")
 
